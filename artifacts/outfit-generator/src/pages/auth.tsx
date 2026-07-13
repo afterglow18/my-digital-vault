@@ -219,14 +219,14 @@ export default function AuthPage({ onAuthenticated }: { onAuthenticated: () => v
             }}
           >
             {/* App name */}
-            <p style={{ fontFamily: "var(--font-display,sans-serif)", fontWeight: 900, fontSize: 11, letterSpacing: "0.16em", color: "rgba(74,58,58,0.5)", textTransform: "uppercase", textAlign: "center", marginBottom: 4 }}>
+            <p style={{ fontFamily: "var(--font-display,sans-serif)", fontWeight: 900, fontSize: 11, letterSpacing: "0.16em", color: "rgba(255,255,255,0.75)", textTransform: "uppercase", textAlign: "center", marginBottom: 4 }}>
               My Digital Vanity
             </p>
 
             {/* Title */}
             <AnimatePresence mode="wait">
               <motion.h1 key={mode} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.18 }}
-                style={{ fontFamily: "var(--font-display,sans-serif)", fontWeight: 800, fontSize: 22, color: "#4A3A3A", textAlign: "center", marginBottom: 22, letterSpacing: "-0.02em" }}
+                style={{ fontFamily: "var(--font-display,sans-serif)", fontWeight: 800, fontSize: 22, color: "#ffffff", textAlign: "center", marginBottom: 22, letterSpacing: "-0.02em" }}
               >
                 {titles[mode]}
               </motion.h1>
