@@ -97,7 +97,13 @@ export function UpgradeSheet({ onClose }: Props) {
         className="relative flex items-center justify-center flex-shrink-0"
         style={{
           height: 64,
-          background: `repeating-linear-gradient(45deg, #F4D6DD 0px, #F4D6DD 18px, #D9A7B3 18px, #D9A7B3 36px)`,
+          backgroundColor: "#F4D6DD",
+          backgroundImage: [
+            // horizontal stripes
+            "repeating-linear-gradient(0deg, transparent 0px, transparent 14px, rgba(193,128,152,0.55) 14px, rgba(193,128,152,0.55) 22px, transparent 22px, transparent 34px, rgba(155,95,120,0.30) 34px, rgba(155,95,120,0.30) 38px, transparent 38px, transparent 48px)",
+            // vertical stripes (same rhythm, layered on top)
+            "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(193,128,152,0.55) 14px, rgba(193,128,152,0.55) 22px, transparent 22px, transparent 34px, rgba(155,95,120,0.30) 34px, rgba(155,95,120,0.30) 38px, transparent 38px, transparent 48px)",
+          ].join(", "),
         }}
       >
         <span
