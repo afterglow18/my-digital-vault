@@ -80,10 +80,10 @@
   --popover-foreground: 0 0% 9%;
   --popover-border: 0 0% 9%;
   
-  --primary: 346 58% 90%; /* Blush — matches ADD button pills */
-  --primary-foreground: 0 13% 26%;
+  --primary: 343 75% 81%; /* Icon pink #F4A7BA */
+  --primary-foreground: 0 13% 18%;
   
-  --secondary: 346 40% 75%; /* Blush deep */
+  --secondary: 343 60% 70%; /* Icon pink deep #E8899F */
   --secondary-foreground: 0 0% 9%;
   
   --muted: 0 0% 90%;

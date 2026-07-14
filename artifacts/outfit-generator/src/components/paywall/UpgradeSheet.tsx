@@ -16,10 +16,10 @@ interface Props {
 }
 
 // ── Brand colours — Spin It button palette ───────────────────────────────────
-const ROSE       = "#F4D6DD";   // dusty pink light (Spin It button top)
-const ROSE_DARK  = "#D9A7B3";   // dusty pink mid (Spin It button bottom / border)
+const ROSE       = "#F4A7BA";   // dusty pink light (Spin It button top)
+const ROSE_DARK  = "#E8899F";   // dusty pink mid (Spin It button bottom / border)
 const ROSE_LIGHT = "#FDF0F3";   // very light tint for selected card bg
-const ROSE_MID   = "#D9A7B3";   // border / badge colour
+const ROSE_MID   = "#E8899F";   // border / badge colour
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -97,12 +97,12 @@ export function UpgradeSheet({ onClose }: Props) {
         className="relative flex items-center justify-center flex-shrink-0"
         style={{
           height: 64,
-          backgroundColor: "#F4D6DD",
+          backgroundColor: "#F4A7BA",
           backgroundImage: [
-            // horizontal stripes
-            "repeating-linear-gradient(0deg, transparent 0px, transparent 14px, rgba(193,128,152,0.55) 14px, rgba(193,128,152,0.55) 22px, transparent 22px, transparent 34px, rgba(155,95,120,0.30) 34px, rgba(155,95,120,0.30) 38px, transparent 38px, transparent 48px)",
-            // vertical stripes (same rhythm, layered on top)
-            "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(193,128,152,0.55) 14px, rgba(193,128,152,0.55) 22px, transparent 22px, transparent 34px, rgba(155,95,120,0.30) 34px, rgba(155,95,120,0.30) 38px, transparent 38px, transparent 48px)",
+            // horizontal black stripes with white hairline — matches app icon plaid
+            "repeating-linear-gradient(0deg, transparent 0px, transparent 20px, rgba(20,8,12,0.72) 20px, rgba(20,8,12,0.72) 30px, rgba(255,255,255,0.50) 30px, rgba(255,255,255,0.50) 32px, rgba(20,8,12,0.72) 32px, rgba(20,8,12,0.72) 42px, transparent 42px, transparent 62px)",
+            // vertical black stripes with white hairline
+            "repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(20,8,12,0.72) 20px, rgba(20,8,12,0.72) 30px, rgba(255,255,255,0.50) 30px, rgba(255,255,255,0.50) 32px, rgba(20,8,12,0.72) 32px, rgba(20,8,12,0.72) 42px, transparent 42px, transparent 62px)",
           ].join(", "),
         }}
       >
@@ -229,8 +229,8 @@ export function UpgradeSheet({ onClose }: Props) {
                      text-black transition-all active:translate-y-0.5 active:shadow-none
                      disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            background: status === "pending" ? "#D9A7B3" : "linear-gradient(to bottom, #F4D6DD, #D9A7B3)",
-            border:     "2.5px solid #D9A7B3",
+            background: status === "pending" ? "#E8899F" : "linear-gradient(to bottom, #F4A7BA, #E8899F)",
+            border:     "2.5px solid #E8899F",
             boxShadow:  status === "pending" ? "none" : "3px 3px 0 rgba(0,0,0,0.85)",
             letterSpacing: "0.04em",
           }}
