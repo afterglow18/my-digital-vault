@@ -15,11 +15,11 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Brand colours — sampled from the vanity room wall ───────────────────────
-const ROSE       = "#E8A898";   // warm salmon-rose (background wall)
-const ROSE_DARK  = "#C07060";   // deeper shadow variant
-const ROSE_LIGHT = "#FDF2EF";   // very light tint for selected card bg
-const ROSE_MID   = "#D4907C";   // mid tone for borders / badges
+// ── Brand colours — Spin It button palette ───────────────────────────────────
+const ROSE       = "#F4D6DD";   // dusty pink light (Spin It button top)
+const ROSE_DARK  = "#D9A7B3";   // dusty pink mid (Spin It button bottom / border)
+const ROSE_LIGHT = "#FDF0F3";   // very light tint for selected card bg
+const ROSE_MID   = "#D9A7B3";   // border / badge colour
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
@@ -97,7 +97,7 @@ export function UpgradeSheet({ onClose }: Props) {
         className="relative flex items-center justify-center flex-shrink-0"
         style={{
           height: 64,
-          background: `repeating-linear-gradient(45deg, ${ROSE} 0px, ${ROSE} 18px, ${ROSE_MID} 18px, ${ROSE_MID} 36px)`,
+          background: `repeating-linear-gradient(45deg, #F4D6DD 0px, #F4D6DD 18px, #D9A7B3 18px, #D9A7B3 36px)`,
         }}
       >
         <span
@@ -223,9 +223,9 @@ export function UpgradeSheet({ onClose }: Props) {
                      text-black transition-all active:translate-y-0.5 active:shadow-none
                      disabled:opacity-60 disabled:cursor-not-allowed"
           style={{
-            background: status === "pending" ? ROSE_DARK : ROSE,
-            border:     "3px solid #000",
-            boxShadow:  status === "pending" ? "none" : "4px 4px 0 #000",
+            background: status === "pending" ? "#D9A7B3" : "linear-gradient(to bottom, #F4D6DD, #D9A7B3)",
+            border:     "2.5px solid #D9A7B3",
+            boxShadow:  status === "pending" ? "none" : "3px 3px 0 rgba(0,0,0,0.85)",
             letterSpacing: "0.04em",
           }}
         >
