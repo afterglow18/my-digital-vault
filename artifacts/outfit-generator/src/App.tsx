@@ -9,6 +9,14 @@ import BackupPage from './pages/backup';
 import WelcomePage from './pages/welcome';
 import { queryClient } from '@/lib/queryClient';
 import { useState, useEffect } from 'react';
+import { initRevenueCat } from '@/lib/revenuecat';
+
+// Initialise RevenueCat as early as possible
+try {
+  initRevenueCat();
+} catch (e) {
+  console.error('[RevenueCat] Init failed:', e);
+}
 
 function NotFound() {
   return (

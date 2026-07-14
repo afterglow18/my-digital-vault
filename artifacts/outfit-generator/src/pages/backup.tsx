@@ -3,7 +3,7 @@
  * Replaces the old simple backup page.
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { Download, Upload, RefreshCw } from 'lucide-react';
 import { exportBackup, importBackup } from '@/lib/backup';
 import { useQueryClient } from '@tanstack/react-query';
@@ -65,8 +65,21 @@ function RoseButton({
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 export default function AccountPage() {
-  const { tier } = useEntitlements();
+  const { tier, restore } = useEntitlements();
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+
+  const handleRestore = useCallback(async () => {
+    if (restoring) return;
+    setRestoring(true);
+    const result = await restore();
+    setRestoring(false);
+    if (result === 'success') {
+      alert('✅ Purchases restored!');
+    } else if (result === 'unavailable') {
+      alert('No previous purchases found.');
+    }
+  }, [restore, restoring]);
 
   const [backupStatus, setBackupStatus] = useState<BackupStatus>('idle');
   const [errorMsg, setErrorMsg]         = useState<string | null>(null);
@@ -172,14 +185,12 @@ export default function AccountPage() {
             {/* Restore purchases */}
             <button
               className="flex items-center justify-center gap-1.5 text-sm text-black/50
-                         font-medium hover:text-black/70 transition-colors"
-              onClick={() => {
-                // RevenueCat restorePurchases() goes here
-                console.log('[Account] Restore purchases tapped — RevenueCat not yet connected');
-              }}
+                         font-medium hover:text-black/70 transition-colors disabled:opacity-40"
+              disabled={restoring}
+              onClick={handleRestore}
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Restore Purchases
+              <RefreshCw className={`w-3.5 h-3.5 ${restoring ? 'animate-spin' : ''}`} />
+              {restoring ? 'Restoring…' : 'Restore Purchases'}
             </button>
           </div>
         </Card>

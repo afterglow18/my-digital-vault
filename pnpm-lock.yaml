@@ -383,6 +383,9 @@ importers:
       '@imgly/background-removal':
         specifier: ^1.7.0
         version: 1.7.0(onnxruntime-web@1.21.0)
+      '@revenuecat/purchases-capacitor':
+        specifier: ^13.2.2
+        version: 13.2.2(@capacitor/core@8.4.1)
       idb:
         specifier: ^8.0.3
         version: 8.0.3
@@ -2422,6 +2425,14 @@ packages:
 
   '@replit/vite-plugin-runtime-error-modal@0.0.6':
     resolution: {integrity: sha512-53iuzLsrvcUnWxAo0fvNrUhOf7LYJ+3at61dZeTIrkaZD4vGNjTbvE0j50TFcjjTC9UM74uprlnQ4+L2A//Cjg==}
+
+  '@revenuecat/purchases-capacitor@13.2.2':
+    resolution: {integrity: sha512-dbhGDL081zbZPNWC44wyDBVub6Vd2pTBo6uVbkM3OlXbZNf4NRizpAXhxUk3lwKcWIelL6HIDEQSq9/+XpWy+g==}
+    peerDependencies:
+      '@capacitor/core': '>=8.0.0'
+
+  '@revenuecat/purchases-typescript-internal-esm@18.19.0':
+    resolution: {integrity: sha512-XOczsiHgfmiSb4l5qbrNaQi/eaTRjGqBQ8CqyQAyxxXPxtaoRaiEMKDtjYGTETuVPksyOOMtixF9Iltr8JbP6A==}
 
   '@rolldown/pluginutils@1.0.0-rc.3':
     resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
@@ -6915,6 +6926,13 @@ snapshots:
   '@replit/vite-plugin-runtime-error-modal@0.0.6':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
+
+  '@revenuecat/purchases-capacitor@13.2.2(@capacitor/core@8.4.1)':
+    dependencies:
+      '@capacitor/core': 8.4.1
+      '@revenuecat/purchases-typescript-internal-esm': 18.19.0
+
+  '@revenuecat/purchases-typescript-internal-esm@18.19.0': {}
 
   '@rolldown/pluginutils@1.0.0-rc.3': {}
 

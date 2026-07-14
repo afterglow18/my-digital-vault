@@ -1,14 +1,20 @@
 /**
- * useEntitlements — local-first entitlement hook.
+ * useEntitlements — entitlement hook backed by RevenueCat.
  *
- * Tier is persisted in localStorage and updated when a purchase completes.
- * The purchase() method is a stub until RevenueCat is wired up;
- * it returns "unavailable" so paywalls close gracefully.
+ * Tier is persisted in localStorage as a fast-read cache and kept in sync
+ * after every purchase / restore.  The authoritative source is RevenueCat.
  */
 
 import { useCallback, useSyncExternalStore } from 'react';
+import { Purchases } from '@revenuecat/purchases-capacitor';
 import type { Tier, TierCapabilities, PurchaseProduct } from '@/types/local';
-import { TIER_CAPS } from '@/types/local';
+import { TIER_CAPS, PRODUCT_TIER } from '@/types/local';
+import {
+  ENTITLEMENT_ID,
+  PRODUCT_TIER_MAP,
+  getPackageForProduct,
+  restoreAndCheck,
+} from '@/lib/revenuecat';
 
 // ── Shared external store ─────────────────────────────────────────────────────
 
@@ -65,27 +71,49 @@ export function useEntitlements() {
     [caps.maxOutfits],
   );
 
-  /**
-   * Purchase stub — RevenueCat integration not yet connected.
-   * Returns "unavailable" so the paywall closes without crashing.
-   *
-   * Product mapping:
-   *   'monthly'  → RevenueCat monthly subscription → tier 'unlock'
-   *   'yearly'   → RevenueCat yearly subscription  → tier 'unlock'
-   *   'lifetime' → RevenueCat one-time purchase    → tier 'unlock'
-   *   'premium'  → RevenueCat one-time purchase    → tier 'premium'
-   *
-   * Replace this body with the actual RevenueCat purchase call
-   * after connecting the integration.
-   */
   const purchase = useCallback(
-    async (_product: PurchaseProduct): Promise<PurchaseResult> => {
-      // TODO: replace with RevenueCat purchase once integrated
-      console.warn('[useEntitlements] RevenueCat not yet configured — product:', _product);
-      return 'unavailable';
+    async (product: PurchaseProduct): Promise<PurchaseResult> => {
+      try {
+        const pkg = await getPackageForProduct(product);
+        if (!pkg) {
+          console.warn('[RevenueCat] Package not found for product:', product);
+          return 'unavailable';
+        }
+
+        const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+
+        if (ENTITLEMENT_ID in (customerInfo.entitlements?.active ?? {})) {
+          const newTier: Tier = PRODUCT_TIER_MAP[product] ?? PRODUCT_TIER[product] ?? 'unlock';
+          setGlobalTier(newTier);
+          return 'success';
+        }
+
+        return 'cancelled';
+      } catch (err: any) {
+        // userCancelled is thrown as an error by the SDK
+        if (err?.code === 'PURCHASE_CANCELLED' || err?.userCancelled === true) {
+          return 'cancelled';
+        }
+        console.error('[RevenueCat] Purchase error:', err);
+        return 'unavailable';
+      }
     },
     [],
   );
 
-  return { tier, caps, canAddItem, canSaveOutfit, purchase };
+  const restore = useCallback(async (): Promise<PurchaseResult> => {
+    try {
+      const active = await restoreAndCheck();
+      if (active) {
+        setGlobalTier('unlock');
+        return 'success';
+      }
+      return 'cancelled';
+    } catch (err) {
+      console.error('[RevenueCat] Restore error:', err);
+      return 'unavailable';
+    }
+  }, []);
+
+  return { tier, caps, canAddItem, canSaveOutfit, purchase, restore };
 }

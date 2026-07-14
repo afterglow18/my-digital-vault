@@ -200,6 +200,8 @@ async function seed() {
     // App Store product
     const existingAppProduct = existingProducts?.items?.find(
       (ep: Product) => ep.store_identifier === p.storeIdentifier && ep.app_id === appStoreApp!.id,
+    ) ?? existingProducts?.items?.find(
+      (ep: Product) => ep.display_name === p.displayName && ep.app_id === appStoreApp!.id,
     );
     let appProduct: Product;
     if (existingAppProduct) {
@@ -216,9 +218,29 @@ async function seed() {
           display_name:     p.displayName,
         },
       });
-      if (error || !created) throw new Error(`Failed to create App Store product "${p.label}": ` + JSON.stringify(error));
-      console.log(`✓ Created App Store product "${p.label}":`, created.id);
-      appProduct = created;
+      if (error) {
+        if ((error as any)?.type === "resource_already_exists") {
+          // Already exists under a different identifier — find it by display name fallback
+          const fallback = existingProducts?.items?.find(
+            (ep: Product) => ep.app_id === appStoreApp!.id && (ep as any).display_name === p.displayName,
+          );
+          if (fallback) {
+            console.log(`✓ App Store product "${p.label}" already existed (display_name match):`, fallback.id);
+            appProduct = fallback;
+          } else {
+            console.warn(`⚠ App Store product "${p.label}" already exists but could not find it — skipping`);
+            appStoreProductMap[p.storeIdentifier] = null as any;
+            continue;
+          }
+        } else {
+          throw new Error(`Failed to create App Store product "${p.label}": ` + JSON.stringify(error));
+        }
+      } else if (!created) {
+        throw new Error(`Failed to create App Store product "${p.label}": no data returned`);
+      } else {
+        console.log(`✓ Created App Store product "${p.label}":`, created.id);
+        appProduct = created;
+      }
     }
     appStoreProductMap[p.storeIdentifier] = appProduct;
   }
