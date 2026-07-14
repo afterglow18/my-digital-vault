@@ -1,6 +1,5 @@
-import express, { Router, type IRouter } from "express";
+import { Router, type IRouter } from "express";
 import { eq, sql, desc, and } from "drizzle-orm";
-import { GoogleGenAI } from "@google/genai";
 import { db, clothingItemsTable, savedOutfitsTable, outfitItemsTable, CLOTHING_CATEGORIES } from "@workspace/db";
 import {
   ListClothingQueryParams,
@@ -9,78 +8,11 @@ import {
   UpdateClothingItemParams,
   UpdateClothingItemBody,
   DeleteClothingItemParams,
-  GenerateOutfitBody,
 } from "@workspace/api-zod";
 import { requireAuth, type AuthRequest } from "../middleware/requireAuth.js";
 
 const router: IRouter = Router();
 
-// ── Clothing image validation via Gemini ────────────────────────────────────────
-
-router.post("/clothing/validate-image", express.json({ limit: "4mb" }), async (req, res): Promise<void> => {
-  const { imageBase64 } = req.body as { imageBase64?: string };
-
-  if (!imageBase64 || typeof imageBase64 !== "string") {
-    res.status(400).json({ error: "imageBase64 is required" });
-    return;
-  }
-
-  const apiKey  = process.env.AI_INTEGRATIONS_GEMINI_API_KEY;
-  const baseUrl = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL;
-
-  if (!apiKey || !baseUrl) {
-    res.json({ isClothing: true, reason: "Validation unavailable (no API key)" });
-    return;
-  }
-
-  try {
-    const ai = new GoogleGenAI({ apiKey, baseUrl });
-
-    const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              inlineData: {
-                mimeType: "image/png",
-                data: imageBase64,
-              },
-            },
-            {
-              text: `Does this image show a beauty, skincare, hair care, or fragrance product?
-Beauty and vanity products include: lipstick, foundation, mascara, eyeshadow, blush, concealer, moisturizer, serum, sunscreen, toner, cleanser, face mask, shampoo, conditioner, hair oil, hair spray, hair tools, perfume, cologne, body spray, deodorant, nail polish, and similar personal care or beauty items.
-
-Reply with a JSON object (no markdown, no code fences) with exactly two keys:
-  "isClothing": boolean  — true if the image clearly shows a beauty, hair care, skincare, or fragrance product
-  "reason": string       — one sentence explanation`,
-            },
-          ],
-        },
-      ],
-    });
-
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    const cleaned = text.replace(/```[a-z]*\n?/gi, "").trim();
-    let parsed: { isClothing: boolean; reason: string };
-
-    try {
-      parsed = JSON.parse(cleaned);
-    } catch {
-      res.json({ isClothing: true, reason: "Could not parse model response" });
-      return;
-    }
-
-    res.json({
-      isClothing: Boolean(parsed.isClothing),
-      reason: String(parsed.reason ?? ""),
-    });
-  } catch (err) {
-    console.error("Gemini clothing validation error:", err);
-    res.json({ isClothing: true, reason: "Validation service error" });
-  }
-});
 
 router.get("/clothing", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as AuthRequest).userId;
@@ -162,42 +94,6 @@ router.get("/clothing/stats", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
-router.post("/clothing/generate-outfit", requireAuth, async (req, res): Promise<void> => {
-  const userId = (req as AuthRequest).userId;
-  const parsed = GenerateOutfitBody.safeParse(req.body ?? {});
-
-  const allItems = await db
-    .select()
-    .from(clothingItemsTable)
-    .where(eq(clothingItemsTable.userId, userId));
-
-  const excludeCategories = parsed.success ? (parsed.data.excludeCategories ?? []) : [];
-  const activeCategories = CLOTHING_CATEGORIES.filter((cat) => !excludeCategories.includes(cat));
-
-  const byCategory: Record<string, typeof allItems> = {};
-  for (const cat of activeCategories) {
-    const catItems = allItems.filter((i) => i.category === cat);
-    if (catItems.length > 0) byCategory[cat] = catItems;
-  }
-
-  if (Object.keys(byCategory).length === 0) {
-    res.status(422).json({ error: "Your vanity is empty. Add some beauty products first!" });
-    return;
-  }
-
-  const preferredOrder = ["makeup", "skincare", "hair", "fragrances"];
-  const outfitItems: typeof allItems = [];
-
-  for (const cat of preferredOrder) {
-    if (byCategory[cat]) {
-      const catItems = byCategory[cat];
-      const picked = catItems[Math.floor(Math.random() * catItems.length)];
-      outfitItems.push(picked);
-    }
-  }
-
-  res.json({ items: outfitItems });
-});
 
 router.get("/clothing/:id", requireAuth, async (req, res): Promise<void> => {
   const userId = (req as AuthRequest).userId;

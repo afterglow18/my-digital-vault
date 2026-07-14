@@ -14,7 +14,7 @@ import React, {
 } from "react";
 import {
   useListClothing, getListClothingQueryKey,
-  useGenerateOutfit, useSaveOutfit, getListOutfitsQueryKey,
+  useSaveOutfit, getListOutfitsQueryKey,
   ClothingItem,
 } from "@workspace/api-client-react";
 import { X } from "lucide-react";
@@ -123,7 +123,6 @@ export default function GeneratePage() {
     fragrances: useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, fragrances: item ?? undefined })), []),
   };
 
-  const generateOutfit = useGenerateOutfit();
   const saveOutfit     = useSaveOutfit();
   const queryClient    = useQueryClient();
 
@@ -157,51 +156,39 @@ export default function GeneratePage() {
       cycle();
     });
 
-    generateOutfit.mutate(
-      { data: { excludeCategories: [] } },
-      {
-        onSuccess: (data) => {
-          const landMap: Partial<Record<RowKey, { item: ClothingItem; idx: number }>> = {};
-          data.items.forEach(apiItem => {
-            const key = apiItem.category as RowKey;
-            if (!["makeup", "skincare", "hair", "fragrances"].includes(key)) return;
-            const arr = rowDataRef.current[key];
-            const localIdx = arr.findIndex(i => i.id === apiItem.id);
-            landMap[key] = { item: apiItem, idx: localIdx >= 0 ? localIdx : 0 };
-          });
+    // Pick a random item from each category locally — no AI call needed.
+    const landMap: Partial<Record<RowKey, { item: ClothingItem; idx: number }>> = {};
+    ROWS.forEach(({ key }) => {
+      const arr = rowDataRef.current[key];
+      if (arr.length > 0) {
+        const idx = Math.floor(Math.random() * arr.length);
+        landMap[key] = { item: arr[idx], idx };
+      }
+    });
 
-          const elapsed   = Date.now() - spinStart;
-          const extraWait = Math.max(0, MIN_SPIN_MS - elapsed);
+    const elapsed   = Date.now() - spinStart;
+    const extraWait = Math.max(0, MIN_SPIN_MS - elapsed);
 
-          setTimeout(() => {
-            ROWS.forEach(({ key }, ri) => {
-              setTimeout(() => {
-                stop[key] = true;
-                const target = landMap[key];
-                rowRefs[key].current?.scrollToIndex(target?.idx ?? 0, true);
-              }, ri * 280);
-            });
+    setTimeout(() => {
+      ROWS.forEach(({ key }, ri) => {
+        setTimeout(() => {
+          stop[key] = true;
+          const target = landMap[key];
+          rowRefs[key].current?.scrollToIndex(target?.idx ?? 0, true);
+        }, ri * 280);
+      });
 
-            const lastLandAt = (ROWS.length - 1) * 280 + 380;
-            setTimeout(() => {
-              const newCentred: Partial<Record<RowKey, ClothingItem>> = {};
-              ROWS.forEach(({ key }) => {
-                if (landMap[key]) newCentred[key] = landMap[key]!.item;
-              });
-              setCentred(newCentred);
-              setPhase("result");
-              spinningRef.current = false;
-            }, lastLandAt);
-          }, extraWait);
-        },
-
-        onError: () => {
-          ROWS.forEach(({ key }) => { stop[key] = true; });
-          setPhase("idle");
-          spinningRef.current = false;
-        },
-      },
-    );
+      const lastLandAt = (ROWS.length - 1) * 280 + 380;
+      setTimeout(() => {
+        const newCentred: Partial<Record<RowKey, ClothingItem>> = {};
+        ROWS.forEach(({ key }) => {
+          if (landMap[key]) newCentred[key] = landMap[key]!.item;
+        });
+        setCentred(newCentred);
+        setPhase("result");
+        spinningRef.current = false;
+      }, lastLandAt);
+    }, extraWait);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSpin   = useCallback(() => {
