@@ -214,20 +214,20 @@ export default function GeneratePage() {
         width: "100%",
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
+        transform: "translateZ(0)", // force iOS WKWebView to honour overflow:hidden
         background: "#E8B0B8",
       }}
     >
-      {/* Background image — CSS cover handles clipping; JS rect used only for UI positioning */}
+      {/* Background image */}
       <img
         src="/generate-bg.png?v=2"
         alt="My Digital Vanity"
         style={{
           position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          objectPosition: "center",
+          top:    ready ? ir.top    : 0,
+          left:   ready ? ir.left  : 0,
+          width:  ready ? ir.width : "100%",
+          height: ready ? ir.height: "auto",
           display: "block",
           pointerEvents: "none",
           userSelect: "none",
