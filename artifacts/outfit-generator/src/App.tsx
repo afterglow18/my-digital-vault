@@ -7,8 +7,10 @@ import SavedPage from './pages/saved';
 import FavoritesPage from './pages/favorites';
 import BackupPage from './pages/backup';
 import WelcomePage from './pages/welcome';
+import HeroSplash from './pages/hero-splash';
 import { queryClient } from '@/lib/queryClient';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { initRevenueCat } from '@/lib/revenuecat';
 
 // Initialise RevenueCat as early as possible
@@ -43,11 +45,20 @@ function Router() {
 }
 
 function AppShell() {
-  const [entered, setEntered] = useState<boolean>(
-    () =>
-      sessionStorage.getItem('closet-entered') === '1' ||
-      new URLSearchParams(window.location.search).get('preview') === '1',
+  const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+
+  const [splashDone, setSplashDone] = useState<boolean>(
+    () => isPreview || localStorage.getItem('mdv-splash-seen') === '1',
   );
+
+  const [entered, setEntered] = useState<boolean>(
+    () => isPreview || sessionStorage.getItem('closet-entered') === '1',
+  );
+
+  const handleSplashContinue = () => {
+    localStorage.setItem('mdv-splash-seen', '1');
+    setSplashDone(true);
+  };
 
   const handleEnter = () => {
     sessionStorage.setItem('closet-entered', '1');
@@ -59,9 +70,16 @@ function AppShell() {
       <Router />
 
       {/* Welcome doors — shown once per session */}
-      {!entered && (
+      {splashDone && !entered && (
         <WelcomePage onEnter={handleEnter} />
       )}
+
+      {/* Hero splash — shown once ever on first launch */}
+      <AnimatePresence>
+        {!splashDone && (
+          <HeroSplash onContinue={handleSplashContinue} />
+        )}
+      </AnimatePresence>
     </WouterRouter>
   );
 }
