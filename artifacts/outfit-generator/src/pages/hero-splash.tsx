@@ -55,7 +55,7 @@ export default function HeroSplash({ onContinue }: Props) {
       <div
         style={{
           position: "absolute",
-          top: "58%",
+          top: "50%",
           left: 0,
           right: 0,
           zIndex: 10,
