@@ -21,10 +21,10 @@ export default function HeroSplash({ onContinue }: Props) {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.6 }}
+      transition={{ duration: 0.8 }}
       onClick={onContinue}
       style={{
         position: "fixed",
