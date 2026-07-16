@@ -14,13 +14,15 @@ type Phase = "closed" | "opening" | "open" | "exiting";
 
 // Total timing (ms)
 const OPEN_DURATION_MS  = 1300;  // lid swing
-const HERO_SHOW_MS      = 1000;  // hero image visible after lid opens
-const EXIT_DURATION_MS  = 650;   // whole-screen fade-out → jewelry page
+const HERO_FADE_IN_MS   = 500;   // hero image fades in after lid opens
+const HERO_SHOW_MS      = 500;   // hero visible at full opacity before exit
+const EXIT_DURATION_MS  = 700;   // whole-screen fade-out → jewelry page
 
 interface Props { onEnter: () => void; }
 
 export default function WelcomePage({ onEnter }: Props) {
-  const [phase, setPhase] = useState<Phase>("closed");
+  const [phase,     setPhase]     = useState<Phase>("closed");
+  const [heroReady, setHeroReady] = useState(false); // triggers hero fade-in
   const calledRef = useRef(false);
 
   const finish = useCallback(() => {
@@ -34,11 +36,11 @@ export default function WelcomePage({ onEnter }: Props) {
     setPhase("opening");
 
     const afterOpen   = OPEN_DURATION_MS;
-    const afterHero   = afterOpen + HERO_SHOW_MS;     // start full-screen fade-out
-    const afterExit   = afterHero + EXIT_DURATION_MS; // call onEnter (jewelry page)
+    const afterFadeIn = afterOpen + HERO_FADE_IN_MS + HERO_SHOW_MS; // start exit fade
+    const afterExit   = afterFadeIn + EXIT_DURATION_MS;             // call onEnter
 
-    setTimeout(() => setPhase("open"),    afterOpen);
-    setTimeout(() => setPhase("exiting"), afterHero);
+    setTimeout(() => { setPhase("open"); setHeroReady(true); }, afterOpen);
+    setTimeout(() => setPhase("exiting"), afterFadeIn);
     setTimeout(finish,                    afterExit);
   };
 
@@ -94,7 +96,7 @@ export default function WelcomePage({ onEnter }: Props) {
             boxShadow: "0 8px 60px rgba(80,0,120,0.7), 0 0 0 2px rgba(212,175,55,0.5)",
           }}
         >
-          {/* Hero photo — visible for 1 s, then whole screen fades to jewelry page */}
+          {/* Hero photo — fades IN once lid is fully open, then whole screen fades out */}
           <img
             src="/jewelry-box-open.jpg"
             alt="Jewelry box interior"
@@ -106,6 +108,8 @@ export default function WelcomePage({ onEnter }: Props) {
               objectPosition: "center top",
               display: "block",
               userSelect: "none",
+              opacity: heroReady ? 1 : 0,
+              transition: `opacity ${HERO_FADE_IN_MS}ms ease-in`,
             }}
           />
         </div>
