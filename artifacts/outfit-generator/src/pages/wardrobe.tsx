@@ -239,7 +239,7 @@ export default function WardrobePage() {
           >
             <span style={{
               fontFamily: "'Great Vibes', cursive",
-              fontSize: Math.min(pH(ir, 0.055), pW(ir, 0.07)),
+              fontSize: Math.min(pH(ir, 0.038), pW(ir, 0.052)),
               color: "#f0d080",
               textShadow: "0 2px 12px rgba(0,0,0,0.7), 0 0 24px rgba(212,175,55,0.4)",
               lineHeight: 1,
