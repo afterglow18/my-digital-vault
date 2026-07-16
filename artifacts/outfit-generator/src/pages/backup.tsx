@@ -194,7 +194,7 @@ export default function AccountPage() {
             {/* Upgrade button (hidden if already premium) */}
             {tier !== 'premium' && (
               <PurpleButton onClick={() => setShowUpgrade(true)}>
-                UPGRADE
+                Unlock Forever – $9.99
               </PurpleButton>
             )}
 
