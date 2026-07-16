@@ -28,12 +28,9 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Gold button ────────────────────────────────────────────────────────────────
+// ── Purple button ──────────────────────────────────────────────────────────────
 
-const ROSE      = "#E8B0B8";   // dusty pink — Spin It button colour
-const ROSE_DARK = "#D0909A";   // dusty pink mid
-
-function RoseButton({
+function PurpleButton({
   onClick,
   disabled,
   children,
@@ -47,12 +44,12 @@ function RoseButton({
       onClick={onClick}
       disabled={disabled}
       className="w-full flex items-center justify-center gap-2.5 py-3.5
-                 rounded-xl border-2 border-black font-black text-sm uppercase tracking-wide
-                 text-black transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                 rounded-xl border-2 font-black text-sm uppercase tracking-wide
+                 text-white transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
                  disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
-        background: disabled ? '#D0909A' : 'linear-gradient(to bottom, #E8B0B8, #D0909A)',
-        border: '2.5px solid #D0909A',
+        background: disabled ? '#7040a0' : 'linear-gradient(to bottom, #9868ba, #7040a0)',
+        border: '2.5px solid #7040a0',
         boxShadow: disabled ? 'none' : '3px 3px 0 rgba(0,0,0,0.85)',
         letterSpacing: '0.07em',
       }}
@@ -130,7 +127,7 @@ export default function AccountPage() {
     } catch (err) {
       setErrorMsg(
         err instanceof Error && err.message.includes('Invalid')
-          ? "This file doesn't look like a valid vanity backup."
+          ? "This file doesn't look like a valid jewelry box backup."
           : 'Import failed. The backup file may be corrupted.',
       );
       setBackupStatus('error');
@@ -151,7 +148,7 @@ export default function AccountPage() {
           className="font-black uppercase leading-none"
           style={{ fontSize: 32, letterSpacing: '-0.02em' }}
         >
-          MY DIGITAL VANITY
+          MY DIGITAL JEWELRY BOX
         </h1>
       </div>
 
@@ -179,9 +176,9 @@ export default function AccountPage() {
 
             {/* Upgrade button (hidden if already premium) */}
             {tier !== 'premium' && (
-              <RoseButton onClick={() => setShowUpgrade(true)}>
+              <PurpleButton onClick={() => setShowUpgrade(true)}>
                 UPGRADE
-              </RoseButton>
+              </PurpleButton>
             )}
 
             {/* Restore purchases */}
@@ -208,31 +205,31 @@ export default function AccountPage() {
 
             {/* Description */}
             <p className="text-sm text-black/60 leading-snug">
-              Export your vanity to a JSON file. Save it to iCloud Drive or Files to keep
+              Export your jewelry box to a JSON file. Save it to iCloud Drive or Files to keep
               it safe across phone upgrades.
             </p>
 
             {/* Export */}
-            <RoseButton onClick={handleExport} disabled={busy}>
+            <PurpleButton onClick={handleExport} disabled={busy}>
               <Download className="w-4 h-4" />
               {backupStatus === 'exporting' ? 'Exporting…' : 'Export Backup'}
-            </RoseButton>
+            </PurpleButton>
 
             {/* Warning */}
             <p className="text-xs font-bold leading-snug" style={{ color: '#C0392B' }}>
-              ⚠️ Deleting the app removes all your vanity data.
+              ⚠️ Deleting the app removes all your jewelry box data.
               Export a backup first to keep it safe.
             </p>
 
             {/* Import */}
-            <RoseButton onClick={() => fileInputRef.current?.click()} disabled={busy}>
+            <PurpleButton onClick={() => fileInputRef.current?.click()} disabled={busy}>
               <Upload className="w-4 h-4" />
               {backupStatus === 'importing' ? 'Restoring…' : 'Import Backup'}
-            </RoseButton>
+            </PurpleButton>
 
             {/* Import note */}
             <p className="text-xs text-black/40 text-center leading-snug">
-              Importing replaces your current vanity with the backup.
+              Importing replaces your current jewelry box with the backup.
             </p>
 
             {/* Error message */}
@@ -261,12 +258,12 @@ export default function AccountPage() {
         <Card>
           <div className="px-4 pt-4 pb-5 flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-2xl leading-none">💄</span>
+              <span className="text-2xl leading-none">💍</span>
               <h2 className="font-black text-base uppercase tracking-wide">My Digital Jewelry Box</h2>
             </div>
             <p className="text-sm text-black/50 font-medium">Version {APP_VERSION}</p>
             <p className="text-sm text-black/60 leading-snug">
-              Your vanity stays on your device, works offline, and can be backed up with iCloud.
+              Your jewelry box stays on your device, works offline, and can be backed up with iCloud.
             </p>
           </div>
         </Card>
@@ -292,7 +289,7 @@ export default function AccountPage() {
                 Replace everything?
               </h3>
               <p className="text-sm text-black/60 mb-5 leading-snug">
-                This will permanently delete your current vanity and replace it with the backup.
+                This will permanently delete your current jewelry box and replace it with the backup.
                 This cannot be undone.
               </p>
               <div className="flex gap-3">
