@@ -72,9 +72,9 @@ function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
       const c = containerRef.current;
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
-      // Cover: scale to fill. rL may be negative — used only for UI positioning.
-      // The image itself uses left:50%+translateX(-50%) so iOS clips both sides.
-      const scale = Math.max(cW / IMG_W, cH / IMG_H);
+      // Scale to fit full image height — vault top-to-bottom always visible.
+      // Width may be narrower than container; dark #111 fills the sides.
+      const scale = cH / IMG_H;
       const rW = IMG_W * scale, rH = IMG_H * scale;
       const rL = (cW - rW) / 2, rT = (cH - rH) / 2;
       setRect({ top: rT, left: rL, width: rW, height: rH, containerH: cH, containerW: cW });
