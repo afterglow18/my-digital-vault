@@ -37,26 +37,26 @@ const ROWS: { key: RowKey; btnLabel: string }[] = [
 ];
 
 // ── Image constants ───────────────────────────────────────────────────────────
-const IMG_W = 1086;
-const IMG_H = 1448;
+const IMG_W = 841;
+const IMG_H = 1870;
 const NAV_H = 90;
 
 // Fraction of image height reserved at the top of every section for the heading.
-const LABEL_FRAC = 0.042;
+const LABEL_FRAC = 0.038;
 
-// Layout markers calibrated for safe-bg.png (1086×1448).
-// All four sections are ~16-18% tall so photos render at the same size.
-// Row 1 → LED + velvet roll; Rows 2-4 → the three open shelf bays.
+// Layout markers calibrated for safe-bg.png (841×1870).
+// Shelf rails detected at ~14.5%, ~27.5%, ~40.5%, ~53.5% of image height.
+// Four bays sit between consecutive rails; headings sit on the rail above each bay.
 const LM = {
-  doorL: 0.12,
-  doorR: 0.88,
+  doorL: 0.07,
+  doorR: 0.93,
   rows: [
-    { sectionTop: 0.07, shelfY: 0.24 },
-    { sectionTop: 0.27, shelfY: 0.45 },
-    { sectionTop: 0.455, shelfY: 0.635 },
-    { sectionTop: 0.63, shelfY: 0.81 },
+    { sectionTop: 0.145, shelfY: 0.275 },
+    { sectionTop: 0.275, shelfY: 0.405 },
+    { sectionTop: 0.405, shelfY: 0.535 },
+    { sectionTop: 0.535, shelfY: 0.665 },
   ],
-  saveAreaY: 0.85,
+  saveAreaY: 0.685,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────
@@ -264,7 +264,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: pY(ir, 0.825),
+                top: pY(ir, 0.685),
                 left: 0, right: 0,
                 margin: "0 auto",
                 width: "fit-content",
