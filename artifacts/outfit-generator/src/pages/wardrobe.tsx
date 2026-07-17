@@ -304,16 +304,17 @@ export default function WardrobePage() {
                   style={{
                     position: "absolute", top: secTop, left: carLeft,
                     width: carW, height: labelH,
-                    zIndex: 24, background: "none", border: "none", cursor: "pointer",
+                    zIndex: 24, background: "#787878", border: "none", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
+                    borderRadius: 6,
                   }}
                 >
                   <span style={{
                     fontSize: Math.max(9, labelH * 0.55),
-                    fontWeight: 300, letterSpacing: "0.22em",
-                    color: "#500d1a",
+                    fontWeight: 600, letterSpacing: "0.22em",
+                    color: "#ffffff",
                     fontFamily: "var(--font-display)", textTransform: "uppercase",
-                    textShadow: "0 1px 3px rgba(255,255,255,0.15)",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.4)",
                   }}>
                     {btnLabel}
                   </span>
