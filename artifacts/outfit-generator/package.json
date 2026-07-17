@@ -80,6 +80,9 @@
     "wouter": "^3.3.5",
     "zod": "catalog:"
   },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "4.62.2"
+  },
   "dependencies": {
     "@aparajita/capacitor-biometric-auth": "^10.0.0",
     "@capacitor/cli": "^8.4.1",
