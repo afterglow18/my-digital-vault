@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.mydigitalvault.app',
-  appName: 'My Handbags',
+  appName: 'My Vault',
   webDir: 'dist/public',
 
   // -------------------------------------------------------------------------
@@ -12,7 +12,7 @@ const config: CapacitorConfig = {
     // Allow the WKWebView to scroll; the app manages its own scroll areas
     scrollEnabled: true,
     // Prevents white flash on launch
-    backgroundColor: '#F4D6DD',
+    backgroundColor: '#111111',
     // Allow inline media playback (used for wardrobe image previews)
     allowsInlineMediaPlayback: true,
   },
@@ -22,7 +22,7 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 1800,
       launchAutoHide: true,
-      backgroundColor: '#F4D6DD',
+      backgroundColor: '#111111',
       iosSpinnerStyle: 'small',
       showSpinner: false,
     },
@@ -30,7 +30,7 @@ const config: CapacitorConfig = {
     // Overlay the status bar so the cream background shows through the notch
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#F4D6DD',
+      backgroundColor: '#111111',
       overlaysWebView: true,
     },
   },

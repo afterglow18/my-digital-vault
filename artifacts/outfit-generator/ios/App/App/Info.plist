@@ -5,13 +5,13 @@
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSFaceIDUsageDescription</key>
-	<string>My Handbags uses Face ID to keep your handbag collection private.</string>
+	<string>My Vault uses Face ID to keep your collection private.</string>
     <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>My Handbags</string>
+        <string>My Vault</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
