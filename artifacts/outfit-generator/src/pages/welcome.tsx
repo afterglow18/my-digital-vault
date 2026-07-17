@@ -360,5 +360,3 @@ function SidePurse({ zipControls, gapControls }: BagProps) {
   );
 }
 
-// expose GOLD_LT at module scope for the pull tab
-const GOLD_LT = "#f0d080";
