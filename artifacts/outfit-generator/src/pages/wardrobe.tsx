@@ -205,12 +205,12 @@ export default function WardrobePage() {
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
         transform: "translateZ(0)", // force iOS WKWebView to honour overflow:hidden
-        background: "#180508",
+        background: "#111111",
       }}
     >
       {/* Background image — centred via CSS transform; iOS clips transform overflow correctly */}
       <img
-        src="/closet-bg.png"
+        src="/safe-bg.png"
         alt="My Digital Vault"
         style={{
           position: "absolute",
@@ -225,10 +225,10 @@ export default function WardrobePage() {
           zIndex: 0,
         }}
       />
-      {/* Plum tint overlay — shifts tones toward handbag collection palette */}
+      {/* Subtle dark overlay — preserves the vault atmosphere */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-        background: "rgba(60, 5, 15, 0.22)",
+        background: "rgba(0, 0, 0, 0.12)",
       }} />
 
       {ready && (
