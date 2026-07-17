@@ -97,10 +97,10 @@ export default function WardrobePage() {
   const ir = useImageRect(containerRef);
 
   const rowRefs: Record<RowKey, RefObject<ClosetRowHandle | null>> = {
-    "totes":              useRef<ClosetRowHandle | null>(null),
-    "shoulder-bags":      useRef<ClosetRowHandle | null>(null),
-    "crossbody-bags":     useRef<ClosetRowHandle | null>(null),
-    "clutches-wristlets": useRef<ClosetRowHandle | null>(null),
+    "documents":          useRef<ClosetRowHandle | null>(null),
+    "finances":           useRef<ClosetRowHandle | null>(null),
+    "personal":           useRef<ClosetRowHandle | null>(null),
+    "recipes-meal-plans": useRef<ClosetRowHandle | null>(null),
   };
 
   const [centred,       setCentred]       = useState<Partial<Record<RowKey, ClothingItem>>>({});
@@ -141,13 +141,13 @@ export default function WardrobePage() {
       });
       return changed ? next : prev;
     });
-  }, [totes.length, shoulderBags.length, crossbodyBags.length, clutchesWristlets.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [documents.length, finances.length, personal.length, recipesMealPlans.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setCentredHandlers: Record<RowKey, (item: ClothingItem | null) => void> = {
-    "totes":              useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "totes":              item ?? undefined })), []),
-    "shoulder-bags":      useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "shoulder-bags":      item ?? undefined })), []),
-    "crossbody-bags":     useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "crossbody-bags":     item ?? undefined })), []),
-    "clutches-wristlets": useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "clutches-wristlets": item ?? undefined })), []),
+    "documents":          useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "documents":          item ?? undefined })), []),
+    "finances":           useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "finances":           item ?? undefined })), []),
+    "personal":           useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "personal":           item ?? undefined })), []),
+    "recipes-meal-plans": useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "recipes-meal-plans": item ?? undefined })), []),
   };
 
   const handleAddClick = useCallback((cat: Category) => {
@@ -155,10 +155,10 @@ export default function WardrobePage() {
   }, [canAddItem, totalItems]);
 
   const addHandlers: Record<RowKey, () => void> = {
-    "totes":              useCallback(() => handleAddClick("totes"),              [handleAddClick]),
-    "shoulder-bags":      useCallback(() => handleAddClick("shoulder-bags"),      [handleAddClick]),
-    "crossbody-bags":     useCallback(() => handleAddClick("crossbody-bags"),     [handleAddClick]),
-    "clutches-wristlets": useCallback(() => handleAddClick("clutches-wristlets"), [handleAddClick]),
+    "documents":          useCallback(() => handleAddClick("documents"),          [handleAddClick]),
+    "finances":           useCallback(() => handleAddClick("finances"),           [handleAddClick]),
+    "personal":           useCallback(() => handleAddClick("personal"),           [handleAddClick]),
+    "recipes-meal-plans": useCallback(() => handleAddClick("recipes-meal-plans"), [handleAddClick]),
   };
 
   const handleItemTap = useCallback((item: ClothingItem) => setDetailsItem(item), []);
