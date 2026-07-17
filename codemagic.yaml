@@ -19,10 +19,6 @@ workflows:
         bundle_identifier: com.mydigitalhandbags.app
 
     scripts:
-      - name: Install pnpm
-        script: |
-          npm install -g pnpm@9
-
       - name: Install dependencies
         script: |
           pnpm install --frozen-lockfile
