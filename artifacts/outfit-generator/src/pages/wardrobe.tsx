@@ -134,20 +134,20 @@ export default function WardrobePage() {
     setCentred(prev => {
       const next = { ...prev };
       let changed = false;
-      (["rings", "earrings", "necklaces", "bracelets"] as RowKey[]).forEach(key => {
+      (["totes", "shoulder-bags", "crossbody-bags", "clutches-wristlets"] as RowKey[]).forEach(key => {
         if (rowData[key].length === 0 && next[key] !== undefined) {
           delete next[key]; changed = true;
         }
       });
       return changed ? next : prev;
     });
-  }, [rings.length, earrings.length, necklaces.length, bracelets.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [totes.length, shoulderBags.length, crossbodyBags.length, clutchesWristlets.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setCentredHandlers: Record<RowKey, (item: ClothingItem | null) => void> = {
-    rings:     useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, rings:     item ?? undefined })), []),
-    earrings:  useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, earrings:  item ?? undefined })), []),
-    necklaces: useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, necklaces: item ?? undefined })), []),
-    bracelets: useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, bracelets: item ?? undefined })), []),
+    "totes":              useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "totes":              item ?? undefined })), []),
+    "shoulder-bags":      useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "shoulder-bags":      item ?? undefined })), []),
+    "crossbody-bags":     useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "crossbody-bags":     item ?? undefined })), []),
+    "clutches-wristlets": useCallback((item: ClothingItem | null) => setCentred(p => ({ ...p, "clutches-wristlets": item ?? undefined })), []),
   };
 
   const handleAddClick = useCallback((cat: Category) => {
@@ -155,10 +155,10 @@ export default function WardrobePage() {
   }, [canAddItem, totalItems]);
 
   const addHandlers: Record<RowKey, () => void> = {
-    rings:     useCallback(() => handleAddClick("rings"),     [handleAddClick]),
-    earrings:  useCallback(() => handleAddClick("earrings"),  [handleAddClick]),
-    necklaces: useCallback(() => handleAddClick("necklaces"), [handleAddClick]),
-    bracelets: useCallback(() => handleAddClick("bracelets"), [handleAddClick]),
+    "totes":              useCallback(() => handleAddClick("totes"),              [handleAddClick]),
+    "shoulder-bags":      useCallback(() => handleAddClick("shoulder-bags"),      [handleAddClick]),
+    "crossbody-bags":     useCallback(() => handleAddClick("crossbody-bags"),     [handleAddClick]),
+    "clutches-wristlets": useCallback(() => handleAddClick("clutches-wristlets"), [handleAddClick]),
   };
 
   const handleItemTap = useCallback((item: ClothingItem) => setDetailsItem(item), []);
