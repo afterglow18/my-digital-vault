@@ -191,10 +191,13 @@ export default function SavedPage() {
           </p>
           <button
             onClick={() => setShowUpgrade(true)}
-            className="w-full py-2.5 rounded-lg border-2 border-black bg-black text-white
-                       font-bold uppercase text-xs tracking-wide
-                       shadow-[2px_2px_0px_0px_rgba(0,0,0,0.3)]
-                       active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+            className="w-full py-2.5 rounded-lg border-2 font-bold uppercase text-xs tracking-wide
+                       text-white active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+            style={{
+              background: 'linear-gradient(to bottom, #7D1528, #5C0F1E)',
+              border: '2px solid #5C0F1E',
+              boxShadow: '3px 3px 0 rgba(0,0,0,0.85)',
+            }}
           >
             Unlock Forever – $9.99
           </button>
