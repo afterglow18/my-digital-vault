@@ -30,9 +30,9 @@ type RowKey   = "totes" | "shoulder-bags" | "crossbody-bags" | "clutches-wristle
 type Category = "totes" | "shoulder-bags" | "crossbody-bags" | "clutches-wristlets";
 
 const ROWS: { key: RowKey; btnLabel: string }[] = [
-  { key: "totes",              btnLabel: "+ ADD TOTES"              },
-  { key: "shoulder-bags",      btnLabel: "+ ADD SHOULDER BAGS"      },
-  { key: "crossbody-bags",     btnLabel: "+ ADD CROSSBODY BAGS"     },
+  { key: "totes",              btnLabel: "+ TOTES"              },
+  { key: "shoulder-bags",      btnLabel: "+ SHOULDER BAGS"      },
+  { key: "crossbody-bags",     btnLabel: "+ CROSSBODY BAGS"     },
   { key: "clutches-wristlets", btnLabel: "+ CLUTCHES" },
 ];
 
