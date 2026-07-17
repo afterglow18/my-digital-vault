@@ -32,12 +32,12 @@ export default function HeroSplash({ onContinue }: Props) {
         inset: 0,
         zIndex: 300,
         cursor: "pointer",
-        background: "#1a0a10",
+        background: "#1a1a1a",
       }}
     >
       {/* Full-screen hero image */}
       <img
-        src="/hero-splash.jpg"
+        src="/vault-door.png"
         alt="My Digital Vault"
         draggable={false}
         style={{
