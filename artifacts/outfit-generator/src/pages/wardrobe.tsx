@@ -353,7 +353,7 @@ export default function WardrobePage() {
             style={{
               position: "absolute", top: pY(ir, 0.905), left: pX(ir, 0.140),
               width: pW(ir, 0.110), height: pH(ir, 0.065),
-              zIndex: 25, background: "transparent", border: "none", cursor: "pointer",
+              zIndex: 25, background: "rgba(255,0,0,0.35)", border: "none", cursor: "pointer",
             }}
           />
 
