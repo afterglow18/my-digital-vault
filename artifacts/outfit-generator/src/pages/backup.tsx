@@ -49,8 +49,8 @@ function PurpleButton({
                  text-white transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
                  disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
-        background: disabled ? '#5C0F1E' : 'linear-gradient(to bottom, #7D1528, #5C0F1E)',
-        border: '2.5px solid #5C0F1E',
+        background: disabled ? '#888888' : 'linear-gradient(to bottom, #8a8a8a, #666666)',
+        border: '2.5px solid #555555',
         boxShadow: disabled ? 'none' : '3px 3px 0 rgba(0,0,0,0.85)',
         letterSpacing: '0.07em',
       }}
