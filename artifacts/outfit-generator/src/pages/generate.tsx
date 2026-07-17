@@ -470,7 +470,7 @@ export default function GeneratePage() {
                         alignItems: "center", justifyContent: "center", gap: 2, padding: "0 12px",
                       }}
                     >
-                      <span>Next</span><span style={{ fontSize: 14, lineHeight: 1 }}>✨</span>
+                      <span>Respin</span><span style={{ fontSize: 14, lineHeight: 1 }}>✨</span>
                     </button>
                     <button
                       onClick={() => setIsSaveOpen(true)} disabled={!canSave}
