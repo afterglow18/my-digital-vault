@@ -304,9 +304,8 @@ export default function WardrobePage() {
                   style={{
                     position: "absolute", top: secTop, left: carLeft,
                     width: carW, height: labelH,
-                    zIndex: 24, background: "#787878", border: "none", cursor: "pointer",
+                    zIndex: 24, background: "none", border: "none", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    borderRadius: 6,
                   }}
                 >
                   <span style={{
