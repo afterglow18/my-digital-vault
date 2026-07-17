@@ -1,61 +1,37 @@
 /**
- * WelcomePage — Burgundy handbag unzip animation.
+ * WelcomePage — Vault door spin-and-swing-open animation.
  *
- * SPLASH    : side-view burgundy handbag with handles, gold zipper, branding.
- * UNZIPPING : zipper pull slides left→right (pixel-based); interior wipes open.
- * ZOOMING   : whole bag scales up — camera dives into the opening.
- * HERO      : hero image crossfades in at peak zoom.
+ * SPLASH    : closed vault door with combination wheel, "tap to open" hint.
+ * SPINNING  : combination wheel spins 2.5 turns (unlocking).
+ * OPENING   : vault door swings open via perspective scaleX + translateX.
+ * HERO      : hero image crossfades in through the open vault.
  * EXITING   : whole screen fades out → onEnter().
  */
 
 import { useState, useCallback, useRef } from "react";
-import { motion, AnimatePresence, useAnimation } from "framer-motion";
+import { motion, useAnimation, AnimatePresence } from "framer-motion";
 
-type Phase = "splash" | "unzipping" | "zooming" | "hero" | "exiting";
+type Phase = "splash" | "spinning" | "opening" | "hero" | "exiting";
 
-const UNZIP_MS = 1500;
-const ZOOM_MS  = 950;
-const HERO_MS  = 800;
-const HOLD_MS  = 400;
-const EXIT_MS  = 700;
+const SPIN_MS   = 1400;
+const OPEN_MS   = 900;
+const HERO_MS   = 700;
+const HOLD_MS   = 500;
+const EXIT_MS   = 700;
 
-const GOLD    = "#d4af37";
-const GOLD_LT = "#f0d080";
-
-// ── Handbag geometry (all in SVG px) ─────────────────────────────────────────
-const W  = 300;   // SVG canvas width
-const H  = 260;   // SVG canvas height
-const BX = 18;    // body left
-const BY = 78;    // body top  (handles sit above this)
-const BW = 264;   // body width
-const BH = 158;   // body height
-const BR = 18;    // body corner radius
-
-// Zipper track runs across the top of the body
-const ZIP_Y     = BY + 6;
-const ZIP_X1    = BX + 12;
-const ZIP_X2    = BX + BW - 12;
-const ZIP_SPAN  = ZIP_X2 - ZIP_X1;   // total travel in px
-
-// Pull tab width (so it stops before the right end-stop)
-const PULL_W    = 18;
-const PULL_TRAVEL = ZIP_SPAN - PULL_W;   // exact px to animate
-
-// Gap below zipper (the opening that reveals the interior)
-const GAP_TOP = BY + 13;
-const GAP_H   = 24;
+const GOLD   = "#c8a96e";
+const STEEL  = "#3c3c3c";
+const CHROME = "#999";
 
 interface Props { onEnter: () => void; }
 
 export default function WelcomePage({ onEnter }: Props) {
   const [phase,       setPhase]       = useState<Phase>("splash");
   const [heroVisible, setHeroVisible] = useState(false);
-  const calledRef   = useRef(false);
-  const zipControls = useAnimation();   // zipper pull — x in px
-  const bagControls = useAnimation();   // whole-bag zoom
-
-  // SVG motion.rect for gap reveal — animated via rectControls
-  const rectControls = useAnimation();  // rect width 0 → ZIP_SPAN
+  const calledRef    = useRef(false);
+  const wheelCtrl    = useAnimation();   // combination wheel rotation
+  const doorCtrl     = useAnimation();   // vault door swing open
+  const frameCtrl    = useAnimation();   // door frame subtle push
 
   const finish = useCallback(() => {
     if (calledRef.current) return;
@@ -65,35 +41,38 @@ export default function WelcomePage({ onEnter }: Props) {
 
   const handleTap = async () => {
     if (phase !== "splash") return;
-    setPhase("unzipping");
+    setPhase("spinning");
 
-    // Zipper pull slides right (pixel value — reliable)
-    zipControls.start({
-      x: PULL_TRAVEL,
-      transition: { duration: UNZIP_MS / 1000, ease: [0.3, 0, 0.7, 1] },
+    // 1. Combination wheel spins 2.5 turns
+    wheelCtrl.start({
+      rotate: 900,
+      transition: { duration: SPIN_MS / 1000, ease: [0.2, 0, 0.5, 1] },
     });
 
-    // Interior wipes left→right (SVG rect width 0 → ZIP_SPAN)
-    rectControls.start({
-      width: ZIP_SPAN,
-      transition: { duration: UNZIP_MS / 1000, ease: [0.3, 0, 0.7, 1] },
+    // Frame vibrates slightly as bolts retract
+    frameCtrl.start({
+      x: [0, -3, 3, -2, 2, 0],
+      transition: { duration: 0.5, delay: SPIN_MS / 1000 - 0.1 },
     });
 
-    // After unzip → zoom bag into screen
-    setTimeout(async () => {
-      setPhase("zooming");
-      bagControls.start({
-        scale: 18,
-        y: -30,
+    // 2. Door swings open — perspective illusion via scaleX + translateX
+    setTimeout(() => {
+      setPhase("opening");
+      doorCtrl.start({
+        scaleX: 0,
+        x: -60,
         opacity: 0,
-        transition: { duration: ZOOM_MS / 1000, ease: [0.4, 0, 1, 1] },
+        transition: { duration: OPEN_MS / 1000, ease: [0.6, 0, 1, 0.8] },
       });
-    }, UNZIP_MS + 60);
+    }, SPIN_MS + 80);
 
-    setTimeout(() => setHeroVisible(true),  UNZIP_MS + ZOOM_MS * 0.4);
-    setTimeout(() => setPhase("hero"),      UNZIP_MS + ZOOM_MS * 0.65);
-    setTimeout(() => setPhase("exiting"),   UNZIP_MS + ZOOM_MS + HOLD_MS);
-    setTimeout(finish,                      UNZIP_MS + ZOOM_MS + HOLD_MS + EXIT_MS);
+    // 3. Hero fades in as door swings
+    setTimeout(() => setHeroVisible(true), SPIN_MS + OPEN_MS * 0.3);
+    setTimeout(() => setPhase("hero"),     SPIN_MS + OPEN_MS * 0.7);
+
+    // 4. Exit
+    setTimeout(() => setPhase("exiting"), SPIN_MS + OPEN_MS + HOLD_MS);
+    setTimeout(finish,                    SPIN_MS + OPEN_MS + HOLD_MS + EXIT_MS);
   };
 
   return (
@@ -103,19 +82,19 @@ export default function WelcomePage({ onEnter }: Props) {
       onClick={phase === "splash" ? handleTap : undefined}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
-        background: "#130306",
+        background: "#0e0e0e",
         display: "flex", alignItems: "center", justifyContent: "center",
         cursor: phase === "splash" ? "pointer" : "default",
         overflow: "hidden",
       }}
     >
-      {/* Ambient glow */}
+      {/* Ambient radial glow — warm gold from center */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: "radial-gradient(ellipse 70% 55% at 50% 48%, rgba(120,10,35,0.45) 0%, transparent 70%)",
+        background: "radial-gradient(ellipse 65% 50% at 50% 52%, rgba(160,120,40,0.22) 0%, transparent 70%)",
       }} />
 
-      {/* Hero image */}
+      {/* Hero image — fades in after door opens */}
       <motion.img
         src="/vault-door.png"
         alt="My Digital Vault"
@@ -128,180 +107,27 @@ export default function WelcomePage({ onEnter }: Props) {
         }}
       />
 
-      {/* Bag + branding wrapper — zooms on cue */}
+      {/* Vault door + branding — swings open */}
       <motion.div
-        animate={bagControls}
+        animate={doorCtrl}
         style={{
           position: "relative", zIndex: 2,
           display: "flex", flexDirection: "column", alignItems: "center",
-          transformOrigin: "50% 36%",   // aim zoom toward the zipper opening
+          transformOrigin: "left center",
         }}
       >
-        {/* ── Handbag illustration ── */}
-        <div style={{
-          position: "relative", width: W, height: H,
-          filter: "drop-shadow(0 20px 50px rgba(0,0,0,0.9)) drop-shadow(0 4px 16px rgba(120,10,35,0.55))",
-        }}>
-          <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} fill="none">
+        <motion.div animate={frameCtrl}>
+          <VaultDoor wheelCtrl={wheelCtrl} />
+        </motion.div>
 
-            {/* ── Handles ─────────────────────────────── */}
-            {/* Left handle */}
-            <path
-              d={`M ${BX+62} ${BY} C ${BX+62} ${BY-46}, ${BX+96} ${BY-58}, ${BX+110} ${BY-58}
-                  C ${BX+124} ${BY-58}, ${BX+158} ${BY-46}, ${BX+158} ${BY}`}
-              stroke="#c4a035" strokeWidth="9" strokeLinecap="round" fill="none"
-            />
-            {/* Handle inner highlight */}
-            <path
-              d={`M ${BX+62} ${BY} C ${BX+62} ${BY-42}, ${BX+96} ${BY-53}, ${BX+110} ${BY-53}
-                  C ${BX+124} ${BY-53}, ${BX+158} ${BY-42}, ${BX+158} ${BY}`}
-              stroke="#e8c050" strokeWidth="2.5" strokeLinecap="round" fill="none" opacity="0.35"
-            />
-
-            {/* ── D-ring hardware at handle bases ── */}
-            {[BX+54, BX+166].map((x, i) => (
-              <g key={i}>
-                <rect x={x} y={BY-6} width={16} height={12} rx={4}
-                  fill="url(#hwGold)" stroke="#c4a035" strokeWidth="0.7" />
-              </g>
-            ))}
-
-            {/* ── Bag body ── */}
-            <rect x={BX} y={BY} width={BW} height={BH} rx={BR}
-              fill="url(#bagGrad)" />
-            {/* Body border */}
-            <rect x={BX} y={BY} width={BW} height={BH} rx={BR}
-              fill="none" stroke="#c4a03550" strokeWidth="1.2" />
-
-            {/* Plaid texture */}
-            <rect x={BX} y={BY} width={BW} height={BH} rx={BR}
-              fill="url(#plaidH)" opacity="0.065" />
-            <rect x={BX} y={BY} width={BW} height={BH} rx={BR}
-              fill="url(#plaidV)" opacity="0.065" />
-
-            {/* Leather sheen */}
-            <rect x={BX} y={BY} width={BW} height={BH} rx={BR}
-              fill="url(#sheen)" opacity="0.16" />
-
-            {/* Stitching border */}
-            <rect x={BX+9} y={BY+9} width={BW-18} height={BH-18} rx={BR-5}
-              fill="none" stroke="#c4a03525" strokeWidth="1" strokeDasharray="5 4" />
-
-            {/* ── Centre turnlock clasp ── */}
-            <rect x={BX+BW/2-22} y={BY+BH/2-12} width={44} height={24} rx={7}
-              fill="url(#hwGold)" opacity="0.8" />
-            <rect x={BX+BW/2-22} y={BY+BH/2-12} width={44} height={24} rx={7}
-              fill="none" stroke="#c4a035" strokeWidth="0.9" />
-            <circle cx={BX+BW/2} cy={BY+BH/2} r={6}
-              fill="url(#studGrad)" stroke="#c4a03560" strokeWidth="0.7" />
-
-            {/* ── Bag feet (4 corners) ── */}
-            {[BX+24, BX+BW-24].map((x, i) => (
-              <ellipse key={i} cx={x} cy={BY+BH+3} rx={7} ry={4}
-                fill="url(#hwGold)" stroke="#a07820" strokeWidth="0.7" />
-            ))}
-
-            {/* ── Dark interior backing (always visible at gap) ── */}
-            <clipPath id="bagClip">
-              <rect x={BX} y={BY} width={BW} height={BH} rx={BR} />
-            </clipPath>
-            <rect x={ZIP_X1} y={GAP_TOP} width={ZIP_SPAN} height={GAP_H}
-              fill="#08020f" clipPath="url(#bagClip)" />
-
-            {/* ── Interior wipe reveal (SVG motion rect, width 0 → ZIP_SPAN) ── */}
-            <motion.rect
-              animate={rectControls}
-              initial={{ width: 0 }}
-              x={ZIP_X1}
-              y={GAP_TOP}
-              height={GAP_H}
-              fill="url(#interiorGrad)"
-              clipPath="url(#bagClip)"
-            />
-
-            {/* ── Zipper track ── */}
-            <line x1={ZIP_X1} y1={ZIP_Y} x2={ZIP_X2} y2={ZIP_Y}
-              stroke={`${GOLD}cc`} strokeWidth="3" strokeLinecap="round" />
-            {/* Teeth */}
-            <line x1={ZIP_X1} y1={ZIP_Y} x2={ZIP_X2} y2={ZIP_Y}
-              stroke="rgba(0,0,0,0.28)" strokeWidth="3"
-              strokeDasharray="4 5" strokeLinecap="butt" />
-            {/* End stops */}
-            <circle cx={ZIP_X1} cy={ZIP_Y} r={4} fill={GOLD} />
-            <circle cx={ZIP_X2} cy={ZIP_Y} r={4} fill={GOLD} />
-
-            <defs>
-              <linearGradient id="bagGrad" x1="0" y1="0" x2="0.2" y2="1">
-                <stop offset="0%"   stopColor="#8c1e2e" />
-                <stop offset="30%"  stopColor="#5C0F1E" />
-                <stop offset="70%"  stopColor="#3d0f18" />
-                <stop offset="100%" stopColor="#250a10" />
-              </linearGradient>
-              <pattern id="plaidH" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="20" height="1.5" y="9" fill="white" />
-              </pattern>
-              <pattern id="plaidV" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="1.5" height="20" x="9" fill="white" />
-              </pattern>
-              <linearGradient id="sheen" x1="0" y1="0" x2="0.7" y2="1">
-                <stop offset="0%"   stopColor="white" stopOpacity="0.11" />
-                <stop offset="45%"  stopColor="white" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="hwGold" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#f0d060" />
-                <stop offset="50%"  stopColor="#a07820" />
-                <stop offset="100%" stopColor="#d4af37" />
-              </linearGradient>
-              <radialGradient id="studGrad" cx="35%" cy="30%" r="65%">
-                <stop offset="0%"   stopColor="#fff8c0" />
-                <stop offset="100%" stopColor="#806010" />
-              </radialGradient>
-              <linearGradient id="interiorGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stopColor="#040010" />
-                <stop offset="100%" stopColor="#180510" />
-              </linearGradient>
-            </defs>
-          </svg>
-
-          {/* ── Zipper pull tab (DOM, slides in pixels) ── */}
-          <motion.div
-            animate={zipControls}
-            initial={{ x: 0 }}
-            style={{
-              position: "absolute",
-              top: ZIP_Y - 16,
-              left: ZIP_X1,
-              display: "flex", flexDirection: "column", alignItems: "center",
-              zIndex: 20, pointerEvents: "none",
-            }}
-          >
-            {/* Loop connector */}
-            <div style={{
-              width: 10, height: 7, borderRadius: 2,
-              background: `linear-gradient(180deg, ${GOLD_LT}, ${GOLD})`,
-              border: "0.6px solid rgba(180,140,20,0.9)",
-            }} />
-            {/* Pull body */}
-            <div style={{
-              width: PULL_W, height: 22, borderRadius: 4, marginTop: 1,
-              background: `linear-gradient(150deg, ${GOLD_LT} 0%, ${GOLD} 55%, #a07820 100%)`,
-              border: "0.8px solid rgba(180,140,20,0.95)",
-              boxShadow: "0 3px 8px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,240,160,0.45)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <div style={{ width: 8, height: 1.5, background: "rgba(0,0,0,0.35)", borderRadius: 1 }} />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* ── Branding ── */}
-        <div style={{ marginTop: 22, textAlign: "center" }}>
+        {/* Branding */}
+        <div style={{ marginTop: 28, textAlign: "center" }}>
           <div style={{
             fontFamily: "'Great Vibes', cursive",
             fontWeight: 400,
-            fontSize: "clamp(38px, 11vw, 56px)",
-            color: "#f0d080",
-            textShadow: "0 0 32px rgba(212,175,55,0.5), 0 2px 10px rgba(0,0,0,0.9)",
+            fontSize: "clamp(36px, 10vw, 52px)",
+            color: GOLD,
+            textShadow: `0 0 28px rgba(200,169,110,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
             lineHeight: 1.15,
           }}>
             My Digital<br />Vault
@@ -309,9 +135,9 @@ export default function WelcomePage({ onEnter }: Props) {
           <div style={{
             fontSize: 10, fontWeight: 500,
             letterSpacing: "0.28em", textTransform: "uppercase",
-            color: "rgba(247,242,236,0.5)", marginTop: 7,
+            color: "rgba(220,200,160,0.45)", marginTop: 8,
           }}>
-            your collection, curated
+            your collection, secured
           </div>
 
           <AnimatePresence>
@@ -321,11 +147,11 @@ export default function WelcomePage({ onEnter }: Props) {
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
+                transition={{ delay: 0.9, duration: 0.5 }}
                 style={{
                   fontSize: 10, letterSpacing: "0.22em",
                   textTransform: "uppercase",
-                  color: "rgba(247,242,236,0.55)", marginTop: 18,
+                  color: "rgba(200,180,130,0.5)", marginTop: 20,
                 }}
               >
                 tap to open
@@ -335,7 +161,7 @@ export default function WelcomePage({ onEnter }: Props) {
         </div>
       </motion.div>
 
-      {/* Footer */}
+      {/* Footer links */}
       <div style={{
         position: "fixed", bottom: "calc(env(safe-area-inset-bottom) + 10px)",
         left: 0, right: 0, display: "flex", flexDirection: "column",
@@ -343,15 +169,180 @@ export default function WelcomePage({ onEnter }: Props) {
       }}>
         <a href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.22)", textDecoration: "none", letterSpacing: "0.02em" }}>
+          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}>
           Privacy Policy
         </a>
         <a href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.22)", textDecoration: "none", letterSpacing: "0.02em" }}>
+          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}>
           Support
         </a>
       </div>
     </motion.div>
+  );
+}
+
+// ── Vault Door SVG Illustration ───────────────────────────────────────────────
+
+const VW = 260;
+const VH = 260;
+const CX = VW / 2;
+const CY = VH / 2;
+const DOOR_R  = 110;   // outer door ring
+const INNER_R = 90;    // inner door face
+const WHEEL_R = 38;    // combination wheel radius
+const BOLT_R  = 7;     // locking bolt circles
+const NUM_BOLTS = 8;
+
+function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }) {
+  const bolts = Array.from({ length: NUM_BOLTS }, (_, i) => {
+    const angle = (i / NUM_BOLTS) * Math.PI * 2 - Math.PI / 2;
+    const r = DOOR_R - 14;
+    return { x: CX + Math.cos(angle) * r, y: CY + Math.sin(angle) * r };
+  });
+
+  const spokes = Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2;
+    return {
+      x1: CX + Math.cos(a) * 10,
+      y1: CY + Math.sin(a) * 10,
+      x2: CX + Math.cos(a) * (WHEEL_R - 5),
+      y2: CY + Math.sin(a) * (WHEEL_R - 5),
+    };
+  });
+
+  return (
+    <svg
+      width={VW}
+      height={VH}
+      viewBox={`0 0 ${VW} ${VH}`}
+      fill="none"
+      style={{ filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.95)) drop-shadow(0 2px 8px rgba(200,169,110,0.18))" }}
+    >
+      <defs>
+        {/* Door body gradient */}
+        <radialGradient id="doorGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%"   stopColor="#4a4a4a" />
+          <stop offset="50%"  stopColor="#2e2e2e" />
+          <stop offset="100%" stopColor="#1a1a1a" />
+        </radialGradient>
+
+        {/* Door ring gradient */}
+        <radialGradient id="ringGrad" cx="35%" cy="30%" r="70%">
+          <stop offset="0%"   stopColor="#666" />
+          <stop offset="60%"  stopColor="#3a3a3a" />
+          <stop offset="100%" stopColor="#222" />
+        </radialGradient>
+
+        {/* Wheel gradient */}
+        <radialGradient id="wheelGrad" cx="40%" cy="35%" r="65%">
+          <stop offset="0%"   stopColor="#dab96a" />
+          <stop offset="40%"  stopColor="#c8a96e" />
+          <stop offset="100%" stopColor="#7a6030" />
+        </radialGradient>
+
+        {/* Bolt gradient */}
+        <radialGradient id="boltGrad" cx="35%" cy="30%" r="65%">
+          <stop offset="0%"   stopColor="#bbb" />
+          <stop offset="100%" stopColor="#555" />
+        </radialGradient>
+
+        {/* Hinge gradient */}
+        <linearGradient id="hingeGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#888" />
+          <stop offset="50%"  stopColor="#ccc" />
+          <stop offset="100%" stopColor="#666" />
+        </linearGradient>
+      </defs>
+
+      {/* Outer frame recess shadow */}
+      <circle cx={CX} cy={CY} r={DOOR_R + 8} fill="#111" />
+
+      {/* Door outer ring */}
+      <circle cx={CX} cy={CY} r={DOOR_R} fill="url(#ringGrad)" />
+
+      {/* Ring inner bevel */}
+      <circle cx={CX} cy={CY} r={DOOR_R - 2} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={2} />
+      <circle cx={CX} cy={CY} r={DOOR_R - 10} fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth={3} />
+
+      {/* Main door face */}
+      <circle cx={CX} cy={CY} r={INNER_R} fill="url(#doorGrad)" />
+
+      {/* Rivet bolts around ring */}
+      {bolts.map((b, i) => (
+        <g key={i}>
+          <circle cx={b.x} cy={b.y} r={BOLT_R + 1} fill="rgba(0,0,0,0.5)" />
+          <circle cx={b.x} cy={b.y} r={BOLT_R} fill="url(#boltGrad)" />
+          <circle cx={b.x - 2} cy={b.y - 2} r={2} fill="rgba(255,255,255,0.25)" />
+        </g>
+      ))}
+
+      {/* Cross locking bars (horizontal + vertical) */}
+      <rect x={CX - INNER_R + 8} y={CY - 5} width={(INNER_R - 8) * 2} height={10} rx={5}
+        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
+      <rect x={CX - 5} y={CY - INNER_R + 8} width={10} height={(INNER_R - 8) * 2} rx={5}
+        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
+
+      {/* Concentric detail rings on door face */}
+      <circle cx={CX} cy={CY} r={70} fill="none" stroke="rgba(200,169,110,0.1)" strokeWidth={1} />
+      <circle cx={CX} cy={CY} r={52} fill="none" stroke="rgba(200,169,110,0.08)" strokeWidth={1} />
+
+      {/* Combination wheel — rotates on spin */}
+      <motion.g animate={wheelCtrl} style={{ originX: `${CX}px`, originY: `${CY}px` }}>
+        {/* Wheel body */}
+        <circle cx={CX} cy={CY} r={WHEEL_R} fill="url(#wheelGrad)" />
+        <circle cx={CX} cy={CY} r={WHEEL_R - 2} fill="none" stroke="rgba(255,230,150,0.2)" strokeWidth={1.5} />
+
+        {/* Notch marks around wheel edge */}
+        {Array.from({ length: 20 }, (_, i) => {
+          const a = (i / 20) * Math.PI * 2;
+          const r1 = WHEEL_R - 3;
+          const r2 = WHEEL_R - 7;
+          return (
+            <line
+              key={i}
+              x1={CX + Math.cos(a) * r1} y1={CY + Math.sin(a) * r1}
+              x2={CX + Math.cos(a) * r2} y2={CY + Math.sin(a) * r2}
+              stroke="rgba(0,0,0,0.45)" strokeWidth={i % 5 === 0 ? 2 : 1}
+            />
+          );
+        })}
+
+        {/* Spokes */}
+        {spokes.map((s, i) => (
+          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
+            stroke="rgba(0,0,0,0.4)" strokeWidth={2} strokeLinecap="round" />
+        ))}
+
+        {/* Hub */}
+        <circle cx={CX} cy={CY} r={10} fill="#c8a96e" />
+        <circle cx={CX} cy={CY} r={7}  fill="#8a6020" />
+        <circle cx={CX - 2} cy={CY - 2} r={2.5} fill="rgba(255,240,180,0.45)" />
+
+        {/* Dial indicator notch at top */}
+        <path d={`M ${CX - 5} ${CY - WHEEL_R + 1} L ${CX} ${CY - WHEEL_R + 9} L ${CX + 5} ${CY - WHEEL_R + 1} Z`}
+          fill="rgba(0,0,0,0.7)" />
+      </motion.g>
+
+      {/* Static indicator tick above wheel */}
+      <path d={`M ${CX - 4} ${CY - WHEEL_R - 8} L ${CX} ${CY - WHEEL_R - 1} L ${CX + 4} ${CY - WHEEL_R - 8} Z`}
+        fill={GOLD} opacity={0.8} />
+
+      {/* Handle bar on right side */}
+      <rect x={CX + INNER_R - 22} y={CY - 18} width={28} height={36} rx={8}
+        fill="#282828" stroke="rgba(200,169,110,0.3)" strokeWidth={1} />
+      <rect x={CX + INNER_R - 16} y={CY - 12} width={16} height={24} rx={5}
+        fill="url(#hingeGrad)" opacity={0.7} />
+
+      {/* Hinge blocks on left side */}
+      {[-28, 18].map((dy, i) => (
+        <rect key={i} x={CX - DOOR_R - 4} y={CY + dy} width={12} height={22} rx={3}
+          fill="#555" stroke="#333" strokeWidth={1} />
+      ))}
+
+      {/* Door face sheen */}
+      <ellipse cx={CX - 22} cy={CY - 30} rx={28} ry={18}
+        fill="rgba(255,255,255,0.04)" />
+    </svg>
   );
 }
