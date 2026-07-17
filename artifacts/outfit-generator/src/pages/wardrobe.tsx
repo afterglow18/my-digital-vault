@@ -26,14 +26,14 @@ import { useEntitlements } from "@/hooks/useEntitlements";
 import { FREE_ITEM_LIMIT } from "@/types/local";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-type RowKey   = "totes" | "shoulder-bags" | "crossbody-bags" | "clutches-wristlets";
-type Category = "totes" | "shoulder-bags" | "crossbody-bags" | "clutches-wristlets";
+type RowKey   = "documents" | "finances" | "personal" | "recipes-meal-plans";
+type Category = "documents" | "finances" | "personal" | "recipes-meal-plans";
 
 const ROWS: { key: RowKey; btnLabel: string }[] = [
-  { key: "totes",              btnLabel: "+ ADD TOTES"              },
-  { key: "shoulder-bags",      btnLabel: "+ ADD SHOULDER BAGS"      },
-  { key: "crossbody-bags",     btnLabel: "+ ADD CROSSBODY BAGS"     },
-  { key: "clutches-wristlets", btnLabel: "+ CLUTCHES & WRISTLETS" },
+  { key: "documents",        btnLabel: "+ ADD DOCUMENTS"         },
+  { key: "finances",         btnLabel: "+ ADD FINANCES"          },
+  { key: "personal",         btnLabel: "+ ADD PERSONAL"          },
+  { key: "recipes-meal-plans", btnLabel: "+ RECIPES & MEAL PLANS" },
 ];
 
 // ── Image constants ───────────────────────────────────────────────────────────
@@ -113,19 +113,19 @@ export default function WardrobePage() {
 
   const saveOutfit = useSaveOutfit();
 
-  const { data: totes            = [] } = useListClothing({ category: "totes"              }, { query: { queryKey: getListClothingQueryKey({ category: "totes"              }) } });
-  const { data: shoulderBags     = [] } = useListClothing({ category: "shoulder-bags"      }, { query: { queryKey: getListClothingQueryKey({ category: "shoulder-bags"      }) } });
-  const { data: crossbodyBags    = [] } = useListClothing({ category: "crossbody-bags"     }, { query: { queryKey: getListClothingQueryKey({ category: "crossbody-bags"     }) } });
-  const { data: clutchesWristlets = [] } = useListClothing({ category: "clutches-wristlets" }, { query: { queryKey: getListClothingQueryKey({ category: "clutches-wristlets" }) } });
+  const { data: documents       = [] } = useListClothing({ category: "documents"         }, { query: { queryKey: getListClothingQueryKey({ category: "documents"         }) } });
+  const { data: finances        = [] } = useListClothing({ category: "finances"          }, { query: { queryKey: getListClothingQueryKey({ category: "finances"          }) } });
+  const { data: personal        = [] } = useListClothing({ category: "personal"          }, { query: { queryKey: getListClothingQueryKey({ category: "personal"          }) } });
+  const { data: recipesMealPlans = [] } = useListClothing({ category: "recipes-meal-plans" }, { query: { queryKey: getListClothingQueryKey({ category: "recipes-meal-plans" }) } });
   const { data: outfits = [] } = useListOutfits();
 
   const rowData: Record<RowKey, ClothingItem[]> = {
-    "totes":              totes,
-    "shoulder-bags":      shoulderBags,
-    "crossbody-bags":     crossbodyBags,
-    "clutches-wristlets": clutchesWristlets,
+    "documents":          documents,
+    "finances":           finances,
+    "personal":           personal,
+    "recipes-meal-plans": recipesMealPlans,
   };
-  const totalItems = totes.length + shoulderBags.length + crossbodyBags.length + clutchesWristlets.length;
+  const totalItems = documents.length + finances.length + personal.length + recipesMealPlans.length;
 
   const queryClient = useQueryClient();
   const { tier, canAddItem } = useEntitlements();
@@ -134,7 +134,7 @@ export default function WardrobePage() {
     setCentred(prev => {
       const next = { ...prev };
       let changed = false;
-      (["totes", "shoulder-bags", "crossbody-bags", "clutches-wristlets"] as RowKey[]).forEach(key => {
+      (["documents", "finances", "personal", "recipes-meal-plans"] as RowKey[]).forEach(key => {
         if (rowData[key].length === 0 && next[key] !== undefined) {
           delete next[key]; changed = true;
         }

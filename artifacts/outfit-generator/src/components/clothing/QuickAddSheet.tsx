@@ -17,13 +17,13 @@ import { encodeToPng } from "@/lib/processImage";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type Category = "totes" | "shoulder-bags" | "crossbody-bags" | "clutches-wristlets";
+type Category = "documents" | "finances" | "personal" | "recipes-meal-plans";
 
 const CATEGORY_LABELS: Record<Category, string> = {
-  "totes":              "Totes",
-  "shoulder-bags":      "Shoulder Bags",
-  "crossbody-bags":     "Crossbody Bags",
-  "clutches-wristlets": "Clutches + Wristlets",
+  "documents":          "Documents",
+  "finances":           "Finances",
+  "personal":           "Personal",
+  "recipes-meal-plans": "Recipes + Meal Plans",
 };
 
 type Phase = "pick" | "uploading";
