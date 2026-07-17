@@ -64,7 +64,7 @@
   --app-font-sans: 'Outfit', sans-serif;
   --app-font-display: 'Syne', sans-serif;
   
-  /* Handbags Palette: Deep Plum, Gold, Cream, Near-Black */
+  /* Handbags Palette: Deep Burgundy, Gold, Cream, Near-Black */
   --background: 45 33% 98%; /* Cream */
   --foreground: 0 0% 9%; /* Almost Black */
   
@@ -80,19 +80,19 @@
   --popover-foreground: 0 0% 9%;
   --popover-border: 0 0% 9%;
   
-  --primary: 278 36% 56%; /* Icon Purple #9868ba */
+  --primary: 350 65% 32%; /* Burgundy #7D1528 */
   --primary-foreground: 43 82% 72%; /* Warm Gold #f0d080 */
   --primary-border: rgba(212,175,55,0.7); /* Gold border */
   
-  --secondary: 278 45% 38%; /* Mid Plum */
+  --secondary: 350 70% 22%; /* Dark Burgundy */
   --secondary-foreground: 43 82% 72%; /* Gold text */
   --secondary-border: rgba(212,175,55,0.4);
   
-  --muted: 280 15% 92%;
-  --muted-foreground: 278 20% 40%;
+  --muted: 350 15% 92%;
+  --muted-foreground: 350 20% 40%;
   
   --accent: 43 65% 52%; /* Gold #d4af37 */
-  --accent-foreground: 278 74% 15%; /* Deep plum text on gold */
+  --accent-foreground: 350 74% 15%; /* Deep burgundy text on gold */
   --accent-border: rgba(180,140,20,0.6);
   
   --destructive: 0 100% 60%;

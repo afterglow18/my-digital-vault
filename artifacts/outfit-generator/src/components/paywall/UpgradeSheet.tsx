@@ -16,9 +16,9 @@ interface Props {
 }
 
 // ── Brand colours — Spin It button palette ───────────────────────────────────
-const ROSE       = "#9868ba";   // icon purple (button top)
-const ROSE_DARK  = "#7040a0";   // icon purple dark (button bottom)
-const ROSE_LIGHT = "#f3eeff";   // very light lavender tint for selected card bg
+const ROSE       = "#7D1528";   // icon burgundy (button top)
+const ROSE_DARK  = "#5C0F1E";   // icon burgundy dark (button bottom)
+const ROSE_LIGHT = "#fdf0f2";   // very light blush tint for selected card bg
 const ROSE_MID   = "#d4af37";   // gold border / badge colour
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -98,12 +98,12 @@ export function UpgradeSheet({ onClose }: Props) {
         style={{
           paddingTop: "env(safe-area-inset-top)",
           minHeight: 64,
-          backgroundColor: "#7040a0",
+          backgroundColor: "#5C0F1E",
           backgroundImage: [
             // horizontal stripes — matching app icon plaid pattern
-            "repeating-linear-gradient(0deg, transparent 0px, transparent 20px, rgba(20,0,40,0.38) 20px, rgba(20,0,40,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(20,0,40,0.38) 32px, rgba(20,0,40,0.38) 42px, transparent 42px, transparent 62px)",
+            "repeating-linear-gradient(0deg, transparent 0px, transparent 20px, rgba(40,0,12,0.38) 20px, rgba(40,0,12,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(40,0,12,0.38) 32px, rgba(40,0,12,0.38) 42px, transparent 42px, transparent 62px)",
             // vertical stripes
-            "repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(20,0,40,0.38) 20px, rgba(20,0,40,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(20,0,40,0.38) 32px, rgba(20,0,40,0.38) 42px, transparent 42px, transparent 62px)",
+            "repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(40,0,12,0.38) 20px, rgba(40,0,12,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(40,0,12,0.38) 32px, rgba(40,0,12,0.38) 42px, transparent 42px, transparent 62px)",
           ].join(", "),
         }}
       >

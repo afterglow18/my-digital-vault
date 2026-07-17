@@ -200,7 +200,7 @@ export default function WardrobePage() {
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
         transform: "translateZ(0)", // force iOS WKWebView to honour overflow:hidden
-        background: "#160520",
+        background: "#180508",
       }}
     >
       {/* Background image — centred via CSS transform; iOS clips transform overflow correctly */}
@@ -223,7 +223,7 @@ export default function WardrobePage() {
       {/* Plum tint overlay — shifts tones toward handbag collection palette */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-        background: "rgba(40, 5, 60, 0.22)",
+        background: "rgba(60, 5, 15, 0.22)",
       }} />
 
       {ready && (
@@ -302,7 +302,7 @@ export default function WardrobePage() {
                   <span style={{
                     fontSize: Math.max(9, labelH * 0.55),
                     fontWeight: 300, letterSpacing: "0.22em",
-                    color: "#3a0d52",
+                    color: "#500d1a",
                     fontFamily: "var(--font-display)", textTransform: "uppercase",
                     textShadow: "0 1px 3px rgba(255,255,255,0.15)",
                   }}>
@@ -459,7 +459,7 @@ export default function WardrobePage() {
                     style={{
                       flex: 1, height: 40, borderRadius: 20,
                       border: "2px solid #d4af37",
-                      background: "linear-gradient(to bottom, #9868ba, #7040a0)",
+                      background: "linear-gradient(to bottom, #7D1528, #5C0F1E)",
                       color: "#f0d080", fontWeight: 800, fontSize: 13,
                       cursor: saveName.trim() ? "pointer" : "default",
                       opacity: saveName.trim() ? 1 : 0.45,

@@ -22,8 +22,8 @@ import { useQueryClient } from "@tanstack/react-query";
 const IMG_W = 1086;
 const IMG_H = 1448;
 const NAV_H = 90;
-const PLUM       = "#9868ba";   // icon purple (light)
-const PLUM_DARK  = "#7040a0";   // icon purple (dark)
+const PLUM       = "#7D1528";   // icon burgundy (light)
+const PLUM_DARK  = "#5C0F1E";   // icon burgundy (dark)
 const GOLD       = "#d4af37";
 const GOLD_LIGHT = "#f0d080";
 
@@ -228,7 +228,7 @@ export default function GeneratePage() {
         height: `calc(100dvh - ${NAV_H}px)`,
         overflow: "hidden",
         transform: "translateZ(0)", // force iOS WKWebView to honour overflow:hidden
-        background: "#160520",
+        background: "#180508",
       }}
     >
       {/* Background image — centred via CSS transform; iOS clips transform overflow correctly */}
@@ -251,7 +251,7 @@ export default function GeneratePage() {
       {/* Subtle plum overlay — preserves handbag collection warmth */}
       <div style={{
         position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-        background: "rgba(30, 5, 50, 0.12)",
+        background: "rgba(50, 5, 15, 0.12)",
       }} />
 
       {ready && (
@@ -300,7 +300,7 @@ export default function GeneratePage() {
                     <span style={{
                       fontSize: Math.max(9, labelH * 0.55),
                       fontWeight: 300, letterSpacing: "0.22em",
-                      color: "#3a0d52",
+                      color: "#500d1a",
                       fontFamily: "var(--font-display)", textTransform: "uppercase",
                       textShadow: "0 1px 3px rgba(255,255,255,0.15)",
                     }}>{key.toUpperCase()}</span>
@@ -417,7 +417,7 @@ export default function GeneratePage() {
                       paddingLeft: 32, paddingRight: 32,
                       height: 52, borderRadius: 28,
                       border: "2.5px solid #d4af37",
-                      background: hasItems ? `linear-gradient(to bottom, ${PLUM}, ${PLUM_DARK})` : "rgba(100,50,150,0.25)",
+                      background: hasItems ? `linear-gradient(to bottom, ${PLUM}, ${PLUM_DARK})` : "rgba(140,20,50,0.25)",
                       color: hasItems ? "#4A3A3A" : "#9a6070",
                       fontWeight: 800, fontSize: 16, letterSpacing: "-0.01em",
                       textTransform: "uppercase", whiteSpace: "nowrap",

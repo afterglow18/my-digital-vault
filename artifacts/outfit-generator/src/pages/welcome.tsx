@@ -53,7 +53,7 @@ export default function WelcomePage({ onEnter }: Props) {
         position: "fixed",
         inset: 0,
         zIndex: 200,
-        background: "#0d0218",
+        background: "#130306",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -67,7 +67,7 @@ export default function WelcomePage({ onEnter }: Props) {
           position: "absolute",
           inset: 0,
           background:
-            "radial-gradient(ellipse 70% 55% at 50% 45%, rgba(90,20,130,0.4) 0%, transparent 70%)",
+            "radial-gradient(ellipse 70% 55% at 50% 45%, rgba(120,10,35,0.45) 0%, transparent 70%)",
           pointerEvents: "none",
           zIndex: 0,
         }}

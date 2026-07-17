@@ -31,7 +31,7 @@ export function LockedScreen({ onAuthenticate }: Props) {
       className="fixed inset-0 z-[200] flex flex-col items-center justify-center"
       style={{
         background:
-          'linear-gradient(160deg, #2d1045 0%, #1a0a2e 60%, #0d0520 100%)',
+          'linear-gradient(160deg, #3d0f18 0%, #1a0508 60%, #130306 100%)',
       }}
     >
       {/* Plaid-style decorative strip at top */}
@@ -46,7 +46,7 @@ export function LockedScreen({ onAuthenticate }: Props) {
           className="w-24 h-24 rounded-3xl flex items-center justify-center border-2"
           style={{
             background:
-              'linear-gradient(135deg, #9868ba 0%, #7040a0 100%)',
+              'linear-gradient(135deg, #7D1528 0%, #5C0F1E 100%)',
             borderColor: '#d4af37',
             boxShadow: '0 0 0 4px rgba(212,175,55,0.15), 4px 4px 0 rgba(0,0,0,0.5)',
           }}
@@ -86,12 +86,12 @@ export function LockedScreen({ onAuthenticate }: Props) {
           style={{
             background:
               status === 'pending'
-                ? '#7040a0'
+                ? '#5C0F1E'
                 : 'linear-gradient(to bottom, #d4af37, #b8962e)',
             border: '2.5px solid rgba(255,255,255,0.25)',
             boxShadow:
               status === 'pending' ? 'none' : '3px 3px 0 rgba(0,0,0,0.5)',
-            color: status === 'pending' ? 'rgba(255,255,255,0.7)' : '#1a0a2e',
+            color: status === 'pending' ? 'rgba(255,255,255,0.7)' : '#1a0508',
           }}
         >
           {status === 'pending' ? 'Authenticating…' : 'Try Again'}
