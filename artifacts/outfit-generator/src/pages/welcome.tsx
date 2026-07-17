@@ -300,8 +300,8 @@ export default function WelcomePage({ onEnter }: Props) {
             fontFamily: "'Great Vibes', cursive",
             fontWeight: 400,
             fontSize: "clamp(38px, 11vw, 56px)",
-            color: "#f7f2ec",
-            textShadow: "0 0 32px rgba(255,245,235,0.3), 0 2px 10px rgba(0,0,0,0.9)",
+            color: "#0a0a0a",
+            textShadow: "0 2px 12px rgba(0,0,0,0.4)",
             lineHeight: 1.15,
           }}>
             My Digital<br />Handbags
