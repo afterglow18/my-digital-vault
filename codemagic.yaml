@@ -35,9 +35,10 @@ workflows:
 
       - name: Increment build number
         script: |
-          LATEST=$(app-store-connect get-latest-build-number "$BUNDLE_ID" 2>/dev/null || echo "1")
+          # Use a timestamp build number (YYMMDDHHmm) — always unique, never collides
+          BUILD_NUMBER=$(date -u +"%y%m%d%H%M")
           cd artifacts/outfit-generator/ios/App
-          agvtool new-version -all $((LATEST + 1))
+          agvtool new-version -all "$BUILD_NUMBER"
 
       - name: Build IPA
         script: |
