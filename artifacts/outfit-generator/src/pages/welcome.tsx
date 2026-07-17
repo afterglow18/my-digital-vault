@@ -117,8 +117,8 @@ export default function WelcomePage({ onEnter }: Props) {
 
       {/* Hero image */}
       <motion.img
-        src="/handbag-hero.jpg"
-        alt="Handbag collection"
+        src="/vault-door.png"
+        alt="My Digital Vault"
         draggable={false}
         animate={{ opacity: heroVisible ? 1 : 0 }}
         transition={{ duration: HERO_MS / 1000, ease: "easeOut" }}
@@ -304,7 +304,7 @@ export default function WelcomePage({ onEnter }: Props) {
             textShadow: "0 0 32px rgba(212,175,55,0.5), 0 2px 10px rgba(0,0,0,0.9)",
             lineHeight: 1.15,
           }}>
-            My Digital<br />Handbags
+            My Digital<br />Vault
           </div>
           <div style={{
             fontSize: 10, fontWeight: 500,
