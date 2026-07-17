@@ -43,9 +43,10 @@ export function AppLayout({ children }: AppLayoutProps) {
                       className={cn(
                         "p-2.5 rounded-full border-2 transition-all duration-200 ease-spring relative",
                         isActive
-                          ? "bg-primary border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
+                          ? "border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] -translate-y-1"
                           : "bg-transparent border-transparent group-hover:bg-muted group-active:scale-95",
                       )}
+                      style={isActive ? { background: "linear-gradient(to bottom, #8a8a8a, #666666)" } : undefined}
                     >
                       {Icon ? (
                         <Icon
@@ -57,7 +58,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                           strokeWidth={isActive ? 2.5 : 2}
                         />
                       ) : (
-                        <span className="text-xl leading-none select-none">👜</span>
+                        <span className="text-xl leading-none select-none">🔐</span>
                       )}
 
                       {/* Badge */}
