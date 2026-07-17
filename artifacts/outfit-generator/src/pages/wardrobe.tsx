@@ -72,12 +72,8 @@ function useImageRect(containerRef: RefObject<HTMLDivElement>): ImgRect {
       const c = containerRef.current;
       if (!c) return;
       const cW = c.clientWidth, cH = c.clientHeight;
-      // Scale to fit full image height — vault top-to-bottom always visible.
-      // Width may be narrower than container; dark #111 fills the sides.
-      const scale = cH / IMG_H;
-      const rW = IMG_W * scale, rH = IMG_H * scale;
-      const rL = (cW - rW) / 2, rT = (cH - rH) / 2;
-      setRect({ top: rT, left: rL, width: rW, height: rH, containerH: cH, containerW: cW });
+      // Image is stretched to fill container exactly — overlays use container dims.
+      setRect({ top: 0, left: 0, width: cW, height: cH, containerH: cH, containerW: cW });
     };
     compute();
     window.addEventListener("resize", compute);
@@ -208,17 +204,14 @@ export default function WardrobePage() {
         background: "#111111",
       }}
     >
-      {/* Background image — centred via CSS transform; iOS clips transform overflow correctly */}
+      {/* Background image — stretched to fill container exactly */}
       <img
         src="/safe-bg.png"
         alt="My Digital Vault"
         style={{
           position: "absolute",
-          top:       ready ? ir.top   : 0,
-          left:      "50%",
-          transform: "translateX(-50%)",
-          width:     ready ? ir.width  : "100%",
-          height:    ready ? ir.height : "auto",
+          top: 0, left: 0,
+          width: "100%", height: "100%",
           display: "block",
           pointerEvents: "none",
           userSelect: "none",
