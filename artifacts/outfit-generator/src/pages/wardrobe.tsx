@@ -249,7 +249,7 @@ export default function WardrobePage() {
             </span>
           </div>
 
-          {/* Item counter — bottom of shelving unit, below last shelf */}
+          {/* Item counter — top of vault, under the heading */}
           {itemsLeft !== null && (
             <button
               onClick={() => setUpgradeReason("items")}
@@ -257,7 +257,7 @@ export default function WardrobePage() {
               aria-label={`${totalItems} of ${FREE_ITEM_LIMIT} items used — tap to upgrade`}
               style={{
                 position: "absolute",
-                top: pY(ir, 0.685),
+                top: pY(ir, 0.09),
                 left: 0, right: 0,
                 margin: "0 auto",
                 width: "fit-content",
@@ -265,11 +265,11 @@ export default function WardrobePage() {
                 padding: "2px 12px", borderRadius: 20, border: "none",
                 background: totalItems >= FREE_ITEM_LIMIT
                   ? "rgba(200,40,40,0.15)"
-                  : "rgba(92,15,30,0.12)",
+                  : "rgba(80,80,80,0.18)",
                 boxShadow: totalItems >= FREE_ITEM_LIMIT
                   ? "0 0 0 1.5px rgba(200,40,40,0.45)"
-                  : "0 0 0 1.5px rgba(92,15,30,0.35)",
-                color: totalItems >= FREE_ITEM_LIMIT ? "#c02020" : "#5C0F1E",
+                  : "0 0 0 1.5px rgba(120,120,120,0.5)",
+                color: totalItems >= FREE_ITEM_LIMIT ? "#c02020" : "#ccc",
                 fontWeight: 700, fontSize: 9,
                 letterSpacing: "0.08em", textTransform: "uppercase",
                 whiteSpace: "nowrap", cursor: "pointer",
