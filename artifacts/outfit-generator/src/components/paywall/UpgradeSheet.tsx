@@ -24,6 +24,9 @@ const ROSE_MID   = "#888888";   // grey border / badge colour
 // ── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
   "Unlimited saves",
+  "Unlimited vault items",
+  "Backup & restore",
+  "Priority support",
 ] as const;
 
 type Plan = {
