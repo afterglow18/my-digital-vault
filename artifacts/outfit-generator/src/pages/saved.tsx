@@ -160,7 +160,7 @@ export default function SavedPage() {
       <header className="mb-6">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
         <div className="flex items-center justify-between">
-          <p className="font-medium text-muted-foreground text-sm">Your saved vault entries.</p>
+          <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
           {isFree && outfitCount > 0 && (
             <button
               onClick={() => setShowUpgrade(true)}
