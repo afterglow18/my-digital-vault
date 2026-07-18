@@ -345,7 +345,7 @@ export default function SavedPage() {
 
                   {/* Extras */}
                   <div className="mt-3 pt-3 border-t border-black/10">
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-black/30 mb-2">Extras</p>
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-black/30 mb-2">Add</p>
                     <div className="grid grid-cols-5 gap-1.5">
                       {Array.from({ length: 5 }).map((_, i) => {
                         const item = extras[i];
