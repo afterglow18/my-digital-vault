@@ -46,9 +46,9 @@ export function LockedScreen({ onAuthenticate }: Props) {
           className="w-24 h-24 rounded-3xl flex items-center justify-center border-2"
           style={{
             background:
-              'linear-gradient(135deg, #7D1528 0%, #5C0F1E 100%)',
-            borderColor: '#d4af37',
-            boxShadow: '0 0 0 4px rgba(212,175,55,0.15), 4px 4px 0 rgba(0,0,0,0.5)',
+              'linear-gradient(135deg, #8a8a8a 0%, #555555 100%)',
+            borderColor: '#888',
+            boxShadow: '0 0 0 4px rgba(100,100,100,0.15), 4px 4px 0 rgba(0,0,0,0.5)',
           }}
         >
           <span className="text-5xl leading-none select-none">💎</span>
@@ -86,12 +86,12 @@ export function LockedScreen({ onAuthenticate }: Props) {
           style={{
             background:
               status === 'pending'
-                ? '#5C0F1E'
-                : 'linear-gradient(to bottom, #d4af37, #b8962e)',
+                ? '#666666'
+                : 'linear-gradient(to bottom, #8a8a8a, #666666)',
             border: '2.5px solid rgba(255,255,255,0.25)',
             boxShadow:
               status === 'pending' ? 'none' : '3px 3px 0 rgba(0,0,0,0.5)',
-            color: status === 'pending' ? 'rgba(255,255,255,0.7)' : '#1a0508',
+            color: '#fff',
           }}
         >
           {status === 'pending' ? 'Authenticating…' : 'Try Again'}

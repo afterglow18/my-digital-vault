@@ -424,20 +424,20 @@ export default function WardrobePage() {
           >
             {saveSuccess ? (
               <div style={{ textAlign: "center", padding: "12px 0" }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>💕</div>
-                <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Look saved!</p>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🔐</div>
+                <p style={{ fontWeight: 800, fontSize: 16, fontFamily: "var(--font-display)" }}>Entry saved!</p>
               </div>
             ) : (
               <>
                 <p style={{ fontWeight: 800, fontSize: 15, fontFamily: "var(--font-display)", marginBottom: 12 }}>
-                  Name this look
+                  Name this entry
                 </p>
                 <input
                   autoFocus
                   value={saveName}
                   onChange={e => setSaveName(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && saveName.trim() && handleSave()}
-                  placeholder="e.g. Sunday Glow ✨"
+                  placeholder="e.g. Tax Records 2024"
                   style={{
                     width: "100%", height: 42, borderRadius: 10,
                     border: "2px solid #000", padding: "0 12px",
@@ -460,9 +460,9 @@ export default function WardrobePage() {
                     disabled={!saveName.trim() || saveOutfit.isPending}
                     style={{
                       flex: 1, height: 40, borderRadius: 20,
-                      border: "2px solid #d4af37",
-                      background: "linear-gradient(to bottom, #7D1528, #5C0F1E)",
-                      color: "#f0d080", fontWeight: 800, fontSize: 13,
+                      border: "2px solid #555",
+                      background: "linear-gradient(to bottom, #8a8a8a, #666666)",
+                      color: "#fff", fontWeight: 800, fontSize: 13,
                       cursor: saveName.trim() ? "pointer" : "default",
                       opacity: saveName.trim() ? 1 : 0.45,
                       fontFamily: "var(--font-display)",

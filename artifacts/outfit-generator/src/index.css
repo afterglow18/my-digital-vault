@@ -80,20 +80,20 @@
   --popover-foreground: 0 0% 9%;
   --popover-border: 0 0% 9%;
   
-  --primary: 350 65% 32%; /* Burgundy #7D1528 */
-  --primary-foreground: 43 82% 72%; /* Warm Gold #f0d080 */
-  --primary-border: rgba(212,175,55,0.7); /* Gold border */
+  --primary: 0 0% 47%; /* Grey #787878 */
+  --primary-foreground: 0 0% 100%; /* White */
+  --primary-border: rgba(100,100,100,0.7); /* Grey border */
   
-  --secondary: 350 70% 22%; /* Dark Burgundy */
-  --secondary-foreground: 43 82% 72%; /* Gold text */
-  --secondary-border: rgba(212,175,55,0.4);
+  --secondary: 0 0% 33%; /* Dark Grey */
+  --secondary-foreground: 0 0% 100%; /* White */
+  --secondary-border: rgba(100,100,100,0.4);
   
   --muted: 350 15% 92%;
   --muted-foreground: 350 20% 40%;
   
-  --accent: 43 65% 52%; /* Gold #d4af37 */
-  --accent-foreground: 350 74% 15%; /* Deep burgundy text on gold */
-  --accent-border: rgba(180,140,20,0.6);
+  --accent: 0 0% 60%; /* Mid grey */
+  --accent-foreground: 0 0% 10%; /* Near-black text on grey */
+  --accent-border: rgba(100,100,100,0.6);
   
   --destructive: 0 100% 60%;
   --destructive-foreground: 0 0% 100%;
