@@ -245,11 +245,10 @@ export default function WardrobePage() {
               WebkitTextStroke: "0.5px rgba(0,0,0,0.8)",
               textShadow: "0 1px 4px rgba(0,0,0,0.6)",
               lineHeight: 1,
-              background: "rgba(0,0,0,0.35)",
-              backdropFilter: "blur(4px)",
-              WebkitBackdropFilter: "blur(4px)",
-              borderRadius: "20px",
-              padding: "4px 16px",
+              background: "#0a0a0a",
+              borderRadius: "4px",
+              padding: "4px 18px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}>
               My Digital Vault
             </span>
