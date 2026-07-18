@@ -13,11 +13,11 @@ import { motion, useAnimation, AnimatePresence } from "framer-motion";
 
 type Phase = "splash" | "spinning" | "opening" | "hero" | "exiting";
 
-const SPIN_MS   = 1400;
-const OPEN_MS   = 900;
-const HERO_MS   = 700;
-const HOLD_MS   = 500;
-const EXIT_MS   = 700;
+const SPIN_MS   = 900;
+const OPEN_MS   = 600;
+const HERO_MS   = 500;
+const HOLD_MS   = 300;
+const EXIT_MS   = 500;
 
 const GOLD   = "#c8a96e";
 const STEEL  = "#3c3c3c";
