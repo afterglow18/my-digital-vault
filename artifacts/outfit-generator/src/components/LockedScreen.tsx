@@ -37,7 +37,7 @@ export function LockedScreen({ onAuthenticate }: Props) {
       {/* Plaid-style decorative strip at top */}
       <div
         className="absolute top-0 left-0 right-0 h-1.5"
-        style={{ background: '#d4af37' }}
+        style={{ background: '#888' }}
       />
 
       {/* Lock icon area */}
@@ -101,7 +101,7 @@ export function LockedScreen({ onAuthenticate }: Props) {
       {/* Gold strip at bottom */}
       <div
         className="absolute bottom-0 left-0 right-0 h-1.5"
-        style={{ background: '#d4af37' }}
+        style={{ background: '#888' }}
       />
     </motion.div>
   );
