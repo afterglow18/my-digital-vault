@@ -241,8 +241,8 @@ export default function WardrobePage() {
             <span style={{
               fontFamily: "'Great Vibes', cursive",
               fontSize: Math.min(pH(ir, 0.038), pW(ir, 0.052)),
-              color: "#0a0a0a",
-              textShadow: "0 1px 4px rgba(255,255,255,0.3)",
+              color: "#ffffff",
+              textShadow: "0 1px 6px rgba(0,0,0,0.8)",
               lineHeight: 1,
             }}>
               My Digital Vault
