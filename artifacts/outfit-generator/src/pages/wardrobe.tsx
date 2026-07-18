@@ -54,7 +54,7 @@ const LM = {
     { sectionTop: 0.145, shelfY: 0.305 },  // bay 1 — heading ON rail
     { sectionTop: 0.305, shelfY: 0.435 },  // bay 2 — heading ON rail
     { sectionTop: 0.435, shelfY: 0.565 },  // bay 3 — heading ON rail
-    { sectionTop: 0.565, shelfY: 0.715 },  // bay 4 — heading ON floor
+    { sectionTop: 0.565, shelfY: 0.705 },  // bay 4 — heading ON floor
   ],
   saveAreaY: 0.71,
 } as const;
