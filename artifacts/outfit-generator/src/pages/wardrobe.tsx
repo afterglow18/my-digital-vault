@@ -51,7 +51,7 @@ const LM = {
   doorL: 0.07,
   doorR: 0.93,
   rows: [
-    { sectionTop: 0.145, shelfY: 0.305 },  // bay 1 — heading ON rail
+    { sectionTop: 0.175, shelfY: 0.305 },  // bay 1 — heading ON rail
     { sectionTop: 0.305, shelfY: 0.435 },  // bay 2 — heading ON rail
     { sectionTop: 0.435, shelfY: 0.565 },  // bay 3 — heading ON rail
     { sectionTop: 0.565, shelfY: 0.700 },  // bay 4 — heading ON floor
