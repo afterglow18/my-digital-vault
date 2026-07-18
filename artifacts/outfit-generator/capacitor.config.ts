@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.mydigitalvault.app',
-  appName: 'My Vault',
+  appName: 'My Files',
   webDir: 'dist/public',
 
   // -------------------------------------------------------------------------
