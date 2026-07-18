@@ -19,9 +19,9 @@ const HERO_MS   = 700;
 const HOLD_MS   = 500;
 const EXIT_MS   = 700;
 
-const GOLD   = "#c0c0c0";   // silver
+const GOLD   = "#c8a96e";
 const STEEL  = "#3c3c3c";
-const CHROME = "#bbb";
+const CHROME = "#999";
 
 interface Props { onEnter: () => void; }
 
@@ -91,7 +91,7 @@ export default function WelcomePage({ onEnter }: Props) {
       {/* Ambient radial glow — warm gold from center */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: "radial-gradient(ellipse 65% 50% at 50% 52%, rgba(160,160,160,0.15) 0%, transparent 70%)",
+        background: "radial-gradient(ellipse 65% 50% at 50% 52%, rgba(160,120,40,0.22) 0%, transparent 70%)",
       }} />
 
       {/* Hero image — fades in after door opens */}
@@ -127,7 +127,7 @@ export default function WelcomePage({ onEnter }: Props) {
             fontWeight: 400,
             fontSize: "clamp(36px, 10vw, 52px)",
             color: GOLD,
-            textShadow: `0 0 28px rgba(192,192,192,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
+            textShadow: `0 0 28px rgba(200,169,110,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
             lineHeight: 1.15,
           }}>
             My Digital<br />Vault
@@ -135,7 +135,7 @@ export default function WelcomePage({ onEnter }: Props) {
           <div style={{
             fontSize: 10, fontWeight: 500,
             letterSpacing: "0.28em", textTransform: "uppercase",
-            color: "rgba(200,200,200,0.45)", marginTop: 8,
+            color: "rgba(220,200,160,0.45)", marginTop: 8,
           }}>
             your collection, secured
           </div>
@@ -151,7 +151,7 @@ export default function WelcomePage({ onEnter }: Props) {
                 style={{
                   fontSize: 10, letterSpacing: "0.22em",
                   textTransform: "uppercase",
-                  color: "rgba(180,180,180,0.5)", marginTop: 20,
+                  color: "rgba(200,180,130,0.5)", marginTop: 20,
                 }}
               >
                 tap to open
@@ -217,7 +217,7 @@ function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }
       height={VH}
       viewBox={`0 0 ${VW} ${VH}`}
       fill="none"
-      style={{ filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.95)) drop-shadow(0 2px 8px rgba(200,200,200,0.18))" }}
+      style={{ filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.95)) drop-shadow(0 2px 8px rgba(200,169,110,0.18))" }}
     >
       <defs>
         {/* Door body gradient */}
@@ -234,11 +234,11 @@ function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }
           <stop offset="100%" stopColor="#222" />
         </radialGradient>
 
-        {/* Wheel gradient — silver */}
+        {/* Wheel gradient */}
         <radialGradient id="wheelGrad" cx="40%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor="#e0e0e0" />
-          <stop offset="40%"  stopColor="#c0c0c0" />
-          <stop offset="100%" stopColor="#707070" />
+          <stop offset="0%"   stopColor="#dab96a" />
+          <stop offset="40%"  stopColor="#c8a96e" />
+          <stop offset="100%" stopColor="#7a6030" />
         </radialGradient>
 
         {/* Bolt gradient */}
@@ -279,19 +279,19 @@ function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }
 
       {/* Cross locking bars (horizontal + vertical) */}
       <rect x={CX - INNER_R + 8} y={CY - 5} width={(INNER_R - 8) * 2} height={10} rx={5}
-        fill="#1e1e1e" stroke="rgba(120,120,120,0.35)" strokeWidth={1} />
+        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
       <rect x={CX - 5} y={CY - INNER_R + 8} width={10} height={(INNER_R - 8) * 2} rx={5}
-        fill="#1e1e1e" stroke="rgba(120,120,120,0.35)" strokeWidth={1} />
+        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
 
       {/* Concentric detail rings on door face */}
-      <circle cx={CX} cy={CY} r={70} fill="none" stroke="rgba(200,200,200,0.1)" strokeWidth={1} />
-      <circle cx={CX} cy={CY} r={52} fill="none" stroke="rgba(200,200,200,0.08)" strokeWidth={1} />
+      <circle cx={CX} cy={CY} r={70} fill="none" stroke="rgba(200,169,110,0.1)" strokeWidth={1} />
+      <circle cx={CX} cy={CY} r={52} fill="none" stroke="rgba(200,169,110,0.08)" strokeWidth={1} />
 
       {/* Combination wheel — rotates on spin */}
       <motion.g animate={wheelCtrl} style={{ originX: `${CX}px`, originY: `${CY}px` }}>
         {/* Wheel body */}
         <circle cx={CX} cy={CY} r={WHEEL_R} fill="url(#wheelGrad)" />
-        <circle cx={CX} cy={CY} r={WHEEL_R - 2} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth={1.5} />
+        <circle cx={CX} cy={CY} r={WHEEL_R - 2} fill="none" stroke="rgba(255,230,150,0.2)" strokeWidth={1.5} />
 
         {/* Notch marks around wheel edge */}
         {Array.from({ length: 20 }, (_, i) => {
@@ -315,9 +315,9 @@ function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }
         ))}
 
         {/* Hub */}
-        <circle cx={CX} cy={CY} r={10} fill="#c0c0c0" />
-        <circle cx={CX} cy={CY} r={7}  fill="#666" />
-        <circle cx={CX - 2} cy={CY - 2} r={2.5} fill="rgba(255,255,255,0.45)" />
+        <circle cx={CX} cy={CY} r={10} fill="#c8a96e" />
+        <circle cx={CX} cy={CY} r={7}  fill="#8a6020" />
+        <circle cx={CX - 2} cy={CY - 2} r={2.5} fill="rgba(255,240,180,0.45)" />
 
         {/* Dial indicator notch at top */}
         <path d={`M ${CX - 5} ${CY - WHEEL_R + 1} L ${CX} ${CY - WHEEL_R + 9} L ${CX + 5} ${CY - WHEEL_R + 1} Z`}
@@ -330,7 +330,7 @@ function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }
 
       {/* Handle bar on right side */}
       <rect x={CX + INNER_R - 22} y={CY - 18} width={28} height={36} rx={8}
-        fill="#282828" stroke="rgba(180,180,180,0.3)" strokeWidth={1} />
+        fill="#282828" stroke="rgba(200,169,110,0.3)" strokeWidth={1} />
       <rect x={CX + INNER_R - 16} y={CY - 12} width={16} height={24} rx={5}
         fill="url(#hingeGrad)" opacity={0.7} />
 
