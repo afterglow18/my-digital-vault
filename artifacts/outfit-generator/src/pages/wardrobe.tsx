@@ -51,12 +51,12 @@ const LM = {
   doorL: 0.07,
   doorR: 0.93,
   rows: [
-    { sectionTop: 0.175, shelfY: 0.305 },  // bay 1 — heading ON rail
-    { sectionTop: 0.305, shelfY: 0.435 },  // bay 2 — heading ON rail
-    { sectionTop: 0.435, shelfY: 0.565 },  // bay 3 — heading ON rail
-    { sectionTop: 0.565, shelfY: 0.700 },  // bay 4 — heading ON floor
+    { sectionTop: 0.130, shelfY: 0.310 },  // bay 1 — heading ON rail
+    { sectionTop: 0.310, shelfY: 0.475 },  // bay 2 — heading ON rail
+    { sectionTop: 0.475, shelfY: 0.635 },  // bay 3 — heading ON rail
+    { sectionTop: 0.635, shelfY: 0.790 },  // bay 4 — heading ON floor
   ],
-  saveAreaY: 0.71,
+  saveAreaY: 0.80,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────
