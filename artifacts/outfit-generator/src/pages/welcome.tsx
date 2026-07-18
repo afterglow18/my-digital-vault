@@ -126,8 +126,8 @@ export default function WelcomePage({ onEnter }: Props) {
             fontFamily: "'Great Vibes', cursive",
             fontWeight: 400,
             fontSize: "clamp(36px, 10vw, 52px)",
-            color: GOLD,
-            textShadow: `0 0 28px rgba(200,169,110,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
+            color: "#e8e8e8",
+            textShadow: `0 0 28px rgba(220,220,220,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
             lineHeight: 1.15,
           }}>
             My Digital<br />Vault
