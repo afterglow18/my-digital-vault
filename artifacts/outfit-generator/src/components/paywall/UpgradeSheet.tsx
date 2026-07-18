@@ -15,18 +15,15 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Brand colours — Spin It button palette ───────────────────────────────────
-const ROSE       = "#7D1528";   // icon burgundy (button top)
-const ROSE_DARK  = "#5C0F1E";   // icon burgundy dark (button bottom)
-const ROSE_LIGHT = "#fdf0f2";   // very light blush tint for selected card bg
-const ROSE_MID   = "#d4af37";   // gold border / badge colour
+// ── Brand colours — grey vault palette ───────────────────────────────────────
+const ROSE       = "#787878";   // grey mid
+const ROSE_DARK  = "#555555";   // grey dark
+const ROSE_LIGHT = "#f0f0f0";   // light grey tint for selected card bg
+const ROSE_MID   = "#888888";   // grey border / badge colour
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
-  "Unlimited vault items",
-  "Unlimited saved looks",
-  "Save your entire vault collection",
-  "One-time payment options",
+  "Unlimited saves",
 ] as const;
 
 type Plan = {
@@ -89,7 +86,7 @@ export function UpgradeSheet({ onClose }: Props) {
       exit={{ opacity: 0, y: "100%" }}
       transition={{ type: "spring", damping: 28, stiffness: 240 }}
       className="fixed inset-0 z-[80] flex flex-col max-w-md mx-auto overflow-hidden"
-      style={{ background: "#FDF5F9" }}
+      style={{ background: "#f5f5f5" }}
     >
 
       {/* ── Hero strip ─────────────────────────────────────────────────── */}
@@ -98,13 +95,7 @@ export function UpgradeSheet({ onClose }: Props) {
         style={{
           paddingTop: "env(safe-area-inset-top)",
           minHeight: 64,
-          backgroundColor: "#5C0F1E",
-          backgroundImage: [
-            // horizontal stripes — matching app icon plaid pattern
-            "repeating-linear-gradient(0deg, transparent 0px, transparent 20px, rgba(40,0,12,0.38) 20px, rgba(40,0,12,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(40,0,12,0.38) 32px, rgba(40,0,12,0.38) 42px, transparent 42px, transparent 62px)",
-            // vertical stripes
-            "repeating-linear-gradient(90deg, transparent 0px, transparent 20px, rgba(40,0,12,0.38) 20px, rgba(40,0,12,0.38) 30px, rgba(255,255,255,0.45) 30px, rgba(255,255,255,0.45) 32px, rgba(40,0,12,0.38) 32px, rgba(40,0,12,0.38) 42px, transparent 42px, transparent 62px)",
-          ].join(", "),
+          background: "linear-gradient(to bottom, #8a8a8a, #555555)",
         }}
       >
         <div style={{
