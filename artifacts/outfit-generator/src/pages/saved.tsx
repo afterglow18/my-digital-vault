@@ -158,9 +158,9 @@ export default function SavedPage() {
   return (
     <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
       <header className="mb-6">
-        <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
+        <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Saved Entries</h1>
         <div className="flex items-center justify-between">
-          <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
+          <p className="font-medium text-muted-foreground text-sm">Your saved vault entries.</p>
           {isFree && outfitCount > 0 && (
             <button
               onClick={() => setShowUpgrade(true)}
@@ -185,7 +185,7 @@ export default function SavedPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-5 border-2 border-black rounded-xl bg-primary p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
         >
-          <p className="font-display font-bold text-sm uppercase tracking-tight">🔓 Lookbook is full</p>
+          <p className="font-display font-bold text-sm uppercase tracking-tight">🔓 Saved entries full</p>
           <p className="text-xs text-black/60 mt-1 mb-3 leading-snug">
             You've saved {FREE_OUTFIT_LIMIT} looks — the free limit. Unlock to save unlimited looks.
           </p>
@@ -403,9 +403,9 @@ export default function SavedPage() {
           <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center border-2 border-black mb-4">
             <Bookmark className="w-7 h-7" />
           </div>
-          <h3 className="font-display font-bold text-xl mb-2">No looks saved yet.</h3>
+          <h3 className="font-display font-bold text-xl mb-2">No entries saved yet.</h3>
           <p className="text-sm font-medium text-muted-foreground">
-            Head to your Vault, spin the slots, and save looks you love.
+            Head to your Vault and save entries here.
           </p>
         </div>
       )}
