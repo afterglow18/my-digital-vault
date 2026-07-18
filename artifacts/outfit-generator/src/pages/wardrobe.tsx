@@ -250,7 +250,7 @@ export default function WardrobePage() {
               padding: "4px 18px",
               boxShadow: "0 2px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15)",
             }}>
-              My Digital Vault
+              My Digital Filing Cabinet
             </span>
           </div>
 

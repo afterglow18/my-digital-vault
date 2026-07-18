@@ -60,7 +60,7 @@ export function useBiometricLock() {
 
   // ── Public: try to authenticate (called by LockedScreen "Try Again") ───────
   const authenticate = useCallback(
-    async (reason = 'Unlock My Digital Vault'): Promise<BiometricResult> => {
+    async (reason = 'Unlock My Digital Filing Cabinet'): Promise<BiometricResult> => {
       const result = await authenticateBiometric(reason);
       if (result === 'success') {
         setIsLocked(false);

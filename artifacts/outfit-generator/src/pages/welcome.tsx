@@ -130,7 +130,7 @@ export default function WelcomePage({ onEnter }: Props) {
             textShadow: `0 0 28px rgba(220,220,220,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
             lineHeight: 1.15,
           }}>
-            My Digital<br />Vault
+            My Digital<br />Filing Cabinet
           </div>
           <div style={{
             fontSize: 10, fontWeight: 500,

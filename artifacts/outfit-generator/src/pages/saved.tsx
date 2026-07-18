@@ -405,7 +405,7 @@ export default function SavedPage() {
           </div>
           <h3 className="font-display font-bold text-xl mb-2">No entries saved yet.</h3>
           <p className="text-sm font-medium text-muted-foreground">
-            Head to your Vault and save entries here.
+            Head to your Filing Cabinet and save entries here.
           </p>
         </div>
       )}

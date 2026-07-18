@@ -23,9 +23,9 @@ const ROSE_MID   = "#888888";   // grey border / badge colour
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 const FEATURES = [
-  "Unlimited vault items",
+  "Unlimited cabinet items",
   "Unlimited saved entries",
-  "Save your entire vault collection",
+  "Save your entire collection",
   "One-time payment options",
 ] as const;
 
@@ -107,7 +107,7 @@ export function UpgradeSheet({ onClose }: Props) {
           boxShadow: "0 3px 12px rgba(0,0,0,0.5), 0 0 0 2px rgba(212,175,55,0.5)",
           filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.35))",
         }}>
-          <img src="/app-icon.jpg" alt="My Digital Vault"
+          <img src="/app-icon.jpg" alt="My Digital Filing Cabinet"
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
         <button
@@ -128,7 +128,7 @@ export function UpgradeSheet({ onClose }: Props) {
           style={{ fontSize: 34, letterSpacing: "-0.02em" }}
         >
           UNLOCK YOUR<br />
-          <span style={{ color: ROSE }}>VAULT</span>
+          <span style={{ color: ROSE }}>CABINET</span>
         </h1>
         <p className="text-xs font-semibold text-black/45 mt-1.5 tracking-wide">
           A premium feature — unlock it once.
