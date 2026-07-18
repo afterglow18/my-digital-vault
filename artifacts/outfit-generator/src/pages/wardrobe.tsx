@@ -51,12 +51,12 @@ const LM = {
   doorL: 0.07,
   doorR: 0.93,
   rows: [
-    { sectionTop: 0.215, shelfY: 0.345 },
-    { sectionTop: 0.345, shelfY: 0.475 },
-    { sectionTop: 0.475, shelfY: 0.605 },
-    { sectionTop: 0.605, shelfY: 0.735 },
+    { sectionTop: 0.145, shelfY: 0.275 },  // bay 1 — heading ON rail at 27.5%
+    { sectionTop: 0.275, shelfY: 0.405 },  // bay 2 — heading ON rail at 40.5%
+    { sectionTop: 0.405, shelfY: 0.535 },  // bay 3 — heading ON rail at 53.5%
+    { sectionTop: 0.535, shelfY: 0.665 },  // bay 4 — heading ON floor at 66.5%
   ],
-  saveAreaY: 0.75,
+  saveAreaY: 0.685,
 } as const;
 
 // ── useImageRect ─────────────────────────────────────────────────────────────
@@ -280,22 +280,44 @@ export default function WardrobePage() {
             </button>
           )}
 
-          {/* 4 shelf rows — heading pinned to top of section, photos below at consistent height */}
+          {/* 4 shelf rows — photos fill bay from top, heading pinned to shelf rail at bottom */}
           {ROWS.map(({ key, btnLabel }, rowIdx) => {
-            const lm    = LM.rows[rowIdx];
-            const items = rowData[key];
+            const lm     = LM.rows[rowIdx];
+            const items  = rowData[key];
             const secTop = pY(ir, lm.sectionTop);
             const secH   = pH(ir, lm.shelfY - lm.sectionTop);
+            const headingTop = secTop + secH - labelH;  // pinned to shelf rail
 
             return (
               <React.Fragment key={key}>
-                {/* Heading — anchored to top of section, tappable to add */}
+                {/* Carousel — fills bay above the heading */}
+                {items.length > 0 && (
+                  <div
+                    data-testid={`row-${key}`}
+                    style={{
+                      position: "absolute",
+                      top: secTop, left: carLeft,
+                      width: carW, height: consistentPhotoH,
+                      zIndex: 10, overflow: "visible",
+                    }}
+                  >
+                    <ClosetRow
+                      ref={rowRefs[key]}
+                      items={items}
+                      onCenteredItem={setCentredHandlers[key]}
+                      onItemTap={handleItemTap}
+                      maxPhotoH={consistentPhotoH}
+                    />
+                  </div>
+                )}
+
+                {/* Heading — pinned to the shelf rail at bottom of section */}
                 <button
                   onClick={addHandlers[key]}
                   aria-label={btnLabel}
                   data-testid={`add-btn-${key}`}
                   style={{
-                    position: "absolute", top: secTop, left: carLeft,
+                    position: "absolute", top: headingTop, left: carLeft,
                     width: carW, height: labelH,
                     zIndex: 24, background: "none", border: "none", cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
@@ -312,35 +334,14 @@ export default function WardrobePage() {
                   </span>
                 </button>
 
-                {/* Carousel — starts immediately below heading, same height every row */}
-                {items.length > 0 && (
-                  <div
-                    data-testid={`row-${key}`}
-                    style={{
-                      position: "absolute",
-                      top: secTop + labelH, left: carLeft,
-                      width: carW, height: consistentPhotoH,
-                      zIndex: 10, overflow: "visible",
-                    }}
-                  >
-                    <ClosetRow
-                      ref={rowRefs[key]}
-                      items={items}
-                      onCenteredItem={setCentredHandlers[key]}
-                      onItemTap={handleItemTap}
-                      maxPhotoH={consistentPhotoH}
-                    />
-                  </div>
-                )}
-
-                {/* Empty-state tap zone — full section, only when no items */}
+                {/* Empty-state tap zone — bay above heading, only when no items */}
                 {items.length === 0 && (
                   <button
                     onClick={addHandlers[key]}
                     aria-label={btnLabel}
                     style={{
                       position: "absolute",
-                      top: secTop + labelH, left: carLeft,
+                      top: secTop, left: carLeft,
                       width: carW, height: secH - labelH,
                       zIndex: 22, background: "transparent", border: "none", cursor: "pointer",
                     }}
