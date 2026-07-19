@@ -32,12 +32,16 @@ export const PRODUCT_TIER_MAP: Record<PurchaseProduct, Tier> = {
 
 let _initialised = false;
 
-export function initRevenueCat() {
+/**
+ * Configure the RevenueCat SDK.
+ * Returns a Promise that resolves once configure() completes so callers can
+ * chain a CustomerInfo sync immediately after.
+ */
+export async function initRevenueCat(): Promise<void> {
   if (_initialised) return;
   _initialised = true;
 
   // In browser / dev → use test store key; in native iOS → use App Store key.
-  // Capacitor automatically handles web vs native context.
   const isNative = !!(window as any).Capacitor?.isNativePlatform?.();
   const apiKey   = isNative ? (IOS_KEY ?? TEST_KEY) : (TEST_KEY ?? IOS_KEY);
 
@@ -46,9 +50,8 @@ export function initRevenueCat() {
     return;
   }
 
-  Purchases.configure({ apiKey })
-    .then(() => console.log("[RevenueCat] Configured"))
-    .catch((e: unknown) => console.error("[RevenueCat] Configure error:", e));
+  await Purchases.configure({ apiKey });
+  console.log("[RevenueCat] Configured");
 }
 
 /** Fetch the current offering and find the package for a given product. */
@@ -60,8 +63,9 @@ export async function getPackageForProduct(
   const current = offerings.current;
   if (!current) return null;
   return (
-    current.availablePackages.find((p: PurchasesPackage) => p.packageType === pkgId || p.identifier === pkgId) ??
-    null
+    current.availablePackages.find(
+      (p: PurchasesPackage) => p.packageType === pkgId || p.identifier === pkgId,
+    ) ?? null
   );
 }
 
@@ -75,4 +79,19 @@ export async function getActiveEntitlement(): Promise<boolean> {
 export async function restoreAndCheck(): Promise<boolean> {
   const { customerInfo } = await Purchases.restorePurchases();
   return ENTITLEMENT_ID in (customerInfo.entitlements?.active ?? {});
+}
+
+/**
+ * Register a callback that fires whenever RevenueCat pushes a CustomerInfo
+ * update (e.g. subscription renewal, expiry, or refund processed server-side).
+ * Call this once after initRevenueCat() resolves.
+ */
+export function setupCustomerInfoListener(
+  onUpdate: (active: boolean) => void,
+): void {
+  Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+    const active = ENTITLEMENT_ID in (customerInfo.entitlements?.active ?? {});
+    console.log("[RevenueCat] CustomerInfo push — entitlement active:", active);
+    onUpdate(active);
+  });
 }
