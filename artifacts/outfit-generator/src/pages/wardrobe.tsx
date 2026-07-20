@@ -294,13 +294,13 @@ export default function WardrobePage() {
 
             return (
               <React.Fragment key={key}>
-                {/* Carousel — fills bay above the heading */}
+                {/* Carousel — pinned to shelf rail (sits directly above heading) */}
                 {items.length > 0 && (
                   <div
                     data-testid={`row-${key}`}
                     style={{
                       position: "absolute",
-                      top: secTop, left: carLeft,
+                      top: headingTop - consistentPhotoH, left: carLeft,
                       width: carW, height: consistentPhotoH,
                       zIndex: 10, overflow: "visible",
                     }}
