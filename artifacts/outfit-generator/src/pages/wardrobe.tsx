@@ -52,8 +52,8 @@ const LM = {
   doorR: 0.93,
   rows: [
     { sectionTop: 0.130, shelfY: 0.344 },  // bay 1 — heading ON rail
-    { sectionTop: 0.310, shelfY: 0.485 },  // bay 2 — heading ON rail
-    { sectionTop: 0.475, shelfY: 0.630 },  // bay 3 — heading ON rail
+    { sectionTop: 0.344, shelfY: 0.485 },  // bay 2 — heading ON rail
+    { sectionTop: 0.485, shelfY: 0.630 },  // bay 3 — heading ON rail
     { sectionTop: 0.630, shelfY: 0.790 },  // bay 4 — heading ON floor
   ],
   saveAreaY: 0.80,
@@ -294,7 +294,10 @@ export default function WardrobePage() {
 
             return (
               <React.Fragment key={key}>
-                {/* Carousel — pinned to shelf rail (sits directly above heading) */}
+                {/* Carousel — pinned to shelf rail (sits directly above heading).
+                    clipPath clips the bottom edge so the scaled center card
+                    (SCALE_CTR=1.12) cannot bleed into the heading below, while
+                    negative insets allow top/side overflow for the scale effect. */}
                 {items.length > 0 && (
                   <div
                     data-testid={`row-${key}`}
@@ -303,6 +306,7 @@ export default function WardrobePage() {
                       top: headingTop - consistentPhotoH, left: carLeft,
                       width: carW, height: consistentPhotoH,
                       zIndex: 10, overflow: "visible",
+                      clipPath: "inset(-500px -500px 0px -500px)",
                     }}
                   >
                     <ClosetRow
