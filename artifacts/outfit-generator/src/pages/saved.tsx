@@ -38,7 +38,7 @@ function ItemPhoto({
     <button
       onClick={onClick}
       className={`w-full ${sizeClass} border-2 border-black overflow-hidden relative`}
-      style={{ background: "#FDECEF", padding: 0, display: "block" }}
+      style={{ background: "#F2F2F2", padding: 0, display: "block" }}
     >
       {item.imageObjectPath ? (
         <img
@@ -354,7 +354,7 @@ export default function SavedPage() {
                             <button
                               onClick={() => setDetailsItem(item)}
                               className="w-full aspect-square border-2 border-black overflow-hidden rounded"
-                              style={{ background: "#FDECEF" }}
+                              style={{ background: "#F2F2F2" }}
                             >
                               {item.imageObjectPath ? (
                                 <img src={getImageUrl(item.imageObjectPath)!} alt={item.name} className="w-full h-full object-contain" />
