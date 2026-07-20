@@ -53,8 +53,8 @@ const LM = {
   rows: [
     { sectionTop: 0.130, shelfY: 0.310 },  // bay 1 — heading ON rail
     { sectionTop: 0.310, shelfY: 0.475 },  // bay 2 — heading ON rail
-    { sectionTop: 0.475, shelfY: 0.620 },  // bay 3 — heading ON rail
-    { sectionTop: 0.620, shelfY: 0.790 },  // bay 4 — heading ON floor
+    { sectionTop: 0.475, shelfY: 0.650 },  // bay 3 — heading ON rail
+    { sectionTop: 0.650, shelfY: 0.790 },  // bay 4 — heading ON floor
   ],
   saveAreaY: 0.80,
 } as const;
