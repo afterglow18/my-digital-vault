@@ -1,37 +1,31 @@
 /**
- * WelcomePage — Vault door spin-and-swing-open animation.
+ * WelcomePage — Filing cabinet drawer pull-open animation.
  *
- * SPLASH    : closed vault door with combination wheel, "tap to open" hint.
- * SPINNING  : combination wheel spins 2.5 turns (unlocking).
- * OPENING   : vault door swings open via perspective scaleX + translateX.
- * HERO      : hero image crossfades in through the open vault.
- * EXITING   : whole screen fades out → onEnter().
+ * SPLASH  : closed 3-drawer filing cabinet with "tap to open" hint.
+ * PULLING : middle drawer slides forward/down (out toward viewer).
+ * OPEN    : hanging file folders fan in inside the cavity.
+ * HERO    : hero image crossfades in.
+ * EXITING : whole screen fades out → onEnter().
  */
 
 import { useState, useCallback, useRef } from "react";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 
-type Phase = "splash" | "spinning" | "opening" | "hero" | "exiting";
+type Phase = "splash" | "pulling" | "open" | "hero" | "exiting";
 
-const SPIN_MS   = 900;
-const OPEN_MS   = 600;
-const HERO_MS   = 500;
-const HOLD_MS   = 300;
-const EXIT_MS   = 500;
-
-const GOLD   = "#c8a96e";
-const STEEL  = "#3c3c3c";
-const CHROME = "#999";
+const PULL_MS = 720;
+const HOLD_MS = 450;
+const HERO_MS = 500;
+const EXIT_MS = 500;
 
 interface Props { onEnter: () => void; }
 
 export default function WelcomePage({ onEnter }: Props) {
-  const [phase,       setPhase]       = useState<Phase>("splash");
-  const [heroVisible, setHeroVisible] = useState(false);
-  const calledRef    = useRef(false);
-  const wheelCtrl    = useAnimation();   // combination wheel rotation
-  const doorCtrl     = useAnimation();   // vault door swing open
-  const frameCtrl    = useAnimation();   // door frame subtle push
+  const [phase,          setPhase]          = useState<Phase>("splash");
+  const [foldersVisible, setFoldersVisible] = useState(false);
+  const [heroVisible,    setHeroVisible]    = useState(false);
+  const calledRef  = useRef(false);
+  const drawerCtrl = useAnimation();
 
   const finish = useCallback(() => {
     if (calledRef.current) return;
@@ -41,38 +35,27 @@ export default function WelcomePage({ onEnter }: Props) {
 
   const handleTap = async () => {
     if (phase !== "splash") return;
-    setPhase("spinning");
+    setPhase("pulling");
 
-    // 1. Combination wheel spins 2.5 turns
-    wheelCtrl.start({
-      rotate: 900,
-      transition: { duration: SPIN_MS / 1000, ease: [0.2, 0, 0.5, 1] },
+    // 1. Middle drawer slides forward (down the screen = toward viewer)
+    drawerCtrl.start({
+      y: 82,
+      transition: { duration: PULL_MS / 1000, ease: [0.22, 0.1, 0.22, 1] },
     });
 
-    // Frame vibrates slightly as bolts retract
-    frameCtrl.start({
-      x: [0, -3, 3, -2, 2, 0],
-      transition: { duration: 0.5, delay: SPIN_MS / 1000 - 0.1 },
-    });
-
-    // 2. Door swings open — perspective illusion via scaleX + translateX
+    // 2. File folders materialise inside cavity partway through the pull
     setTimeout(() => {
-      setPhase("opening");
-      doorCtrl.start({
-        scaleX: 0,
-        x: -60,
-        opacity: 0,
-        transition: { duration: OPEN_MS / 1000, ease: [0.6, 0, 1, 0.8] },
-      });
-    }, SPIN_MS + 80);
+      setFoldersVisible(true);
+      setPhase("open");
+    }, PULL_MS * 0.42);
 
-    // 3. Hero fades in as door swings
-    setTimeout(() => setHeroVisible(true), SPIN_MS + OPEN_MS * 0.3);
-    setTimeout(() => setPhase("hero"),     SPIN_MS + OPEN_MS * 0.7);
+    // 3. Hero image fades in after drawer is fully out
+    setTimeout(() => setHeroVisible(true), PULL_MS + 130);
+    setTimeout(() => setPhase("hero"),     PULL_MS + 260);
 
     // 4. Exit
-    setTimeout(() => setPhase("exiting"), SPIN_MS + OPEN_MS + HOLD_MS);
-    setTimeout(finish,                    SPIN_MS + OPEN_MS + HOLD_MS + EXIT_MS);
+    setTimeout(() => setPhase("exiting"), PULL_MS + HOLD_MS + 200);
+    setTimeout(finish,                    PULL_MS + HOLD_MS + 200 + EXIT_MS);
   };
 
   return (
@@ -88,16 +71,17 @@ export default function WelcomePage({ onEnter }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* Ambient radial glow — warm gold from center */}
+      {/* Ambient silver glow */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
-        background: "radial-gradient(ellipse 65% 50% at 50% 52%, rgba(160,120,40,0.22) 0%, transparent 70%)",
+        background:
+          "radial-gradient(ellipse 60% 45% at 50% 46%, rgba(150,150,170,0.14) 0%, transparent 70%)",
       }} />
 
-      {/* Hero image — fades in after door opens */}
+      {/* Hero image — fades in after drawer opens */}
       <motion.img
         src="/vault-door.png"
-        alt="My Digital Vault"
+        alt="My Digital Filing Cabinet"
         draggable={false}
         animate={{ opacity: heroVisible ? 1 : 0 }}
         transition={{ duration: HERO_MS / 1000, ease: "easeOut" }}
@@ -107,27 +91,21 @@ export default function WelcomePage({ onEnter }: Props) {
         }}
       />
 
-      {/* Vault door + branding — swings open */}
-      <motion.div
-        animate={doorCtrl}
-        style={{
-          position: "relative", zIndex: 2,
-          display: "flex", flexDirection: "column", alignItems: "center",
-          transformOrigin: "left center",
-        }}
-      >
-        <motion.div animate={frameCtrl}>
-          <VaultDoor wheelCtrl={wheelCtrl} />
-        </motion.div>
+      {/* Cabinet + branding */}
+      <div style={{
+        position: "relative", zIndex: 2,
+        display: "flex", flexDirection: "column", alignItems: "center",
+      }}>
+        <FilingCabinet drawerCtrl={drawerCtrl} foldersVisible={foldersVisible} />
 
         {/* Branding */}
-        <div style={{ marginTop: 28, textAlign: "center" }}>
+        <div style={{ marginTop: 22, textAlign: "center" }}>
           <div style={{
             fontFamily: "'Great Vibes', cursive",
             fontWeight: 400,
-            fontSize: "clamp(36px, 10vw, 52px)",
+            fontSize: "clamp(34px, 9.5vw, 50px)",
             color: "#e8e8e8",
-            textShadow: `0 0 28px rgba(220,220,220,0.5), 0 2px 10px rgba(0,0,0,0.95)`,
+            textShadow: "0 0 28px rgba(220,220,220,0.5), 0 2px 10px rgba(0,0,0,0.95)",
             lineHeight: 1.15,
           }}>
             My Digital<br />Filing Cabinet
@@ -135,7 +113,7 @@ export default function WelcomePage({ onEnter }: Props) {
           <div style={{
             fontSize: 10, fontWeight: 500,
             letterSpacing: "0.28em", textTransform: "uppercase",
-            color: "rgba(220,200,160,0.45)", marginTop: 8,
+            color: "rgba(200,200,210,0.38)", marginTop: 8,
           }}>
             your collection, secured
           </div>
@@ -151,7 +129,7 @@ export default function WelcomePage({ onEnter }: Props) {
                 style={{
                   fontSize: 10, letterSpacing: "0.22em",
                   textTransform: "uppercase",
-                  color: "rgba(200,180,130,0.5)", marginTop: 20,
+                  color: "rgba(200,200,210,0.45)", marginTop: 20,
                 }}
               >
                 tap to open
@@ -159,22 +137,28 @@ export default function WelcomePage({ onEnter }: Props) {
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Footer links */}
+      {/* Footer */}
       <div style={{
-        position: "fixed", bottom: "calc(env(safe-area-inset-bottom) + 10px)",
-        left: 0, right: 0, display: "flex", flexDirection: "column",
+        position: "fixed",
+        bottom: "calc(env(safe-area-inset-bottom) + 10px)",
+        left: 0, right: 0,
+        display: "flex", flexDirection: "column",
         alignItems: "center", gap: 4, zIndex: 210,
       }}>
-        <a href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
+        <a
+          href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}>
+          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}
+        >
           Privacy Policy
         </a>
-        <a href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
+        <a
+          href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
           target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}>
+          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.2)", textDecoration: "none", letterSpacing: "0.02em" }}
+        >
           Support
         </a>
       </div>
@@ -182,167 +166,309 @@ export default function WelcomePage({ onEnter }: Props) {
   );
 }
 
-// ── Vault Door SVG Illustration ───────────────────────────────────────────────
+// ── Filing Cabinet SVG ────────────────────────────────────────────────────────
 
-const VW = 260;
-const VH = 260;
-const CX = VW / 2;
-const CY = VH / 2;
-const DOOR_R  = 110;   // outer door ring
-const INNER_R = 90;    // inner door face
-const WHEEL_R = 38;    // combination wheel radius
-const BOLT_R  = 7;     // locking bolt circles
-const NUM_BOLTS = 8;
+const VW = 210;
+const VH = 300;
 
-function VaultDoor({ wheelCtrl }: { wheelCtrl: ReturnType<typeof useAnimation> }) {
-  const bolts = Array.from({ length: NUM_BOLTS }, (_, i) => {
-    const angle = (i / NUM_BOLTS) * Math.PI * 2 - Math.PI / 2;
-    const r = DOOR_R - 14;
-    return { x: CX + Math.cos(angle) * r, y: CY + Math.sin(angle) * r };
-  });
+// Cabinet body
+const CAB = { x: 12, y: 10, w: 186, h: 268 };
 
-  const spokes = Array.from({ length: 8 }, (_, i) => {
-    const a = (i / 8) * Math.PI * 2;
-    return {
-      x1: CX + Math.cos(a) * 10,
-      y1: CY + Math.sin(a) * 10,
-      x2: CX + Math.cos(a) * (WHEEL_R - 5),
-      y2: CY + Math.sin(a) * (WHEEL_R - 5),
-    };
-  });
+// Vertical zones
+const TOP_H  = 30;   // brand plate
+const FOOT_H = 18;   // base / feet
 
+// Drawer area
+const DRAW_Y = CAB.y + TOP_H;
+const DRAW_H_TOTAL = CAB.h - TOP_H - FOOT_H;  // 220
+
+// 3 drawers
+const N_DRAWERS = 3;
+const DGAP = 5;
+const DH   = Math.floor((DRAW_H_TOTAL - DGAP * (N_DRAWERS - 1)) / N_DRAWERS);  // ≈ 70
+
+// Drawer horizontal bounds (inset from cabinet sides)
+const DX = CAB.x + 7;
+const DW = CAB.w - 14;
+
+// Drawer Y positions
+const DRAWER_YS = Array.from({ length: N_DRAWERS }, (_, i) =>
+  DRAW_Y + i * (DH + DGAP),
+);
+
+const OPEN_IDX = 1;   // middle drawer opens
+const OPEN_DY  = DRAWER_YS[OPEN_IDX];
+
+// Hanging-file folder palette
+const FOLDERS = [
+  { body: "#7a9e87", tab: "#4e7a60" },
+  { body: "#c8a96e", tab: "#a07838" },
+  { body: "#8a9abf", tab: "#5a6a9f" },
+  { body: "#b98a8a", tab: "#8a5a5a" },
+  { body: "#a89870", tab: "#7a6a40" },
+];
+
+function FilingCabinet({
+  drawerCtrl,
+  foldersVisible,
+}: {
+  drawerCtrl: ReturnType<typeof useAnimation>;
+  foldersVisible: boolean;
+}) {
   return (
     <svg
       width={VW}
       height={VH}
       viewBox={`0 0 ${VW} ${VH}`}
       fill="none"
-      style={{ filter: "drop-shadow(0 12px 40px rgba(0,0,0,0.95)) drop-shadow(0 2px 8px rgba(200,169,110,0.18))" }}
+      style={{ overflow: "visible", filter: "drop-shadow(0 18px 52px rgba(0,0,0,0.92)) drop-shadow(0 2px 8px rgba(160,160,180,0.1))" }}
     >
       <defs>
-        {/* Door body gradient */}
-        <radialGradient id="doorGrad" cx="40%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor="#4a4a4a" />
-          <stop offset="50%"  stopColor="#2e2e2e" />
-          <stop offset="100%" stopColor="#1a1a1a" />
-        </radialGradient>
-
-        {/* Door ring gradient */}
-        <radialGradient id="ringGrad" cx="35%" cy="30%" r="70%">
-          <stop offset="0%"   stopColor="#666" />
-          <stop offset="60%"  stopColor="#3a3a3a" />
-          <stop offset="100%" stopColor="#222" />
-        </radialGradient>
-
-        {/* Wheel gradient */}
-        <radialGradient id="wheelGrad" cx="40%" cy="35%" r="65%">
-          <stop offset="0%"   stopColor="#dab96a" />
-          <stop offset="40%"  stopColor="#c8a96e" />
-          <stop offset="100%" stopColor="#7a6030" />
-        </radialGradient>
-
-        {/* Bolt gradient */}
-        <radialGradient id="boltGrad" cx="35%" cy="30%" r="65%">
-          <stop offset="0%"   stopColor="#bbb" />
-          <stop offset="100%" stopColor="#555" />
-        </radialGradient>
-
-        {/* Hinge gradient */}
-        <linearGradient id="hingeGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="#888" />
-          <stop offset="50%"  stopColor="#ccc" />
-          <stop offset="100%" stopColor="#666" />
+        <linearGradient id="cabBody" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#545454" />
+          <stop offset="30%"  stopColor="#424242" />
+          <stop offset="75%"  stopColor="#383838" />
+          <stop offset="100%" stopColor="#282828" />
         </linearGradient>
+
+        <linearGradient id="cabTop" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#4c4c4c" />
+          <stop offset="50%"  stopColor="#3c3c3c" />
+          <stop offset="100%" stopColor="#2c2c2c" />
+        </linearGradient>
+
+        <linearGradient id="drwFace" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#5a5a5a" />
+          <stop offset="25%"  stopColor="#4c4c4c" />
+          <stop offset="75%"  stopColor="#424242" />
+          <stop offset="100%" stopColor="#323232" />
+        </linearGradient>
+
+        <linearGradient id="drwFaceOpen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#545454" />
+          <stop offset="100%" stopColor="#3c3c3c" />
+        </linearGradient>
+
+        <linearGradient id="interior" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#1c1c1c" />
+          <stop offset="100%" stopColor="#101010" />
+        </linearGradient>
+
+        <linearGradient id="handle" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#b0b0b0" />
+          <stop offset="35%"  stopColor="#d8d8d8" />
+          <stop offset="100%" stopColor="#747474" />
+        </linearGradient>
+
+        <linearGradient id="cabBase" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%"   stopColor="#383838" />
+          <stop offset="50%"  stopColor="#2e2e2e" />
+          <stop offset="100%" stopColor="#222222" />
+        </linearGradient>
+
+        {/* Clip to keep folder content inside cavity */}
+        <clipPath id="cavClip">
+          <rect x={DX} y={OPEN_DY} width={DW} height={DH} />
+        </clipPath>
       </defs>
 
-      {/* Outer frame recess shadow */}
-      <circle cx={CX} cy={CY} r={DOOR_R + 8} fill="#111" />
+      {/* ── Outer drop-shadow recess ── */}
+      <rect
+        x={CAB.x - 3} y={CAB.y - 3}
+        width={CAB.w + 6} height={CAB.h + 6}
+        rx={5} fill="#080808"
+      />
 
-      {/* Door outer ring */}
-      <circle cx={CX} cy={CY} r={DOOR_R} fill="url(#ringGrad)" />
+      {/* ── Cabinet body ── */}
+      <rect x={CAB.x} y={CAB.y} width={CAB.w} height={CAB.h} rx={3}
+        fill="url(#cabBody)" />
 
-      {/* Ring inner bevel */}
-      <circle cx={CX} cy={CY} r={DOOR_R - 2} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={2} />
-      <circle cx={CX} cy={CY} r={DOOR_R - 10} fill="none" stroke="rgba(0,0,0,0.5)" strokeWidth={3} />
+      {/* Left highlight edge */}
+      <rect x={CAB.x} y={CAB.y} width={3} height={CAB.h} rx={1}
+        fill="rgba(255,255,255,0.09)" />
+      {/* Top highlight edge */}
+      <rect x={CAB.x} y={CAB.y} width={CAB.w} height={2}
+        fill="rgba(255,255,255,0.13)" />
+      {/* Right shadow edge */}
+      <rect x={CAB.x + CAB.w - 5} y={CAB.y} width={5} height={CAB.h}
+        fill="rgba(0,0,0,0.28)" />
 
-      {/* Main door face */}
-      <circle cx={CX} cy={CY} r={INNER_R} fill="url(#doorGrad)" />
-
-      {/* Rivet bolts around ring */}
-      {bolts.map((b, i) => (
-        <g key={i}>
-          <circle cx={b.x} cy={b.y} r={BOLT_R + 1} fill="rgba(0,0,0,0.5)" />
-          <circle cx={b.x} cy={b.y} r={BOLT_R} fill="url(#boltGrad)" />
-          <circle cx={b.x - 2} cy={b.y - 2} r={2} fill="rgba(255,255,255,0.25)" />
-        </g>
+      {/* ── Top brand plate ── */}
+      <rect x={CAB.x} y={CAB.y} width={CAB.w} height={TOP_H} rx={3}
+        fill="url(#cabTop)" />
+      {/* Divider line below brand plate */}
+      <rect x={CAB.x} y={CAB.y + TOP_H - 2} width={CAB.w} height={3}
+        fill="rgba(0,0,0,0.5)" />
+      {/* Label recessed card */}
+      <rect x={CAB.x + 18} y={CAB.y + 7} width={CAB.w - 36} height={16} rx={2}
+        fill="rgba(0,0,0,0.38)" stroke="rgba(255,255,255,0.07)" strokeWidth={1} />
+      {/* Brand-plate rivets */}
+      {[CAB.x + 9, CAB.x + CAB.w - 9].map((rx, i) => (
+        <circle key={i} cx={rx} cy={CAB.y + TOP_H / 2} r={3.5}
+          fill="rgba(80,80,80,1)" stroke="rgba(255,255,255,0.12)" strokeWidth={1} />
       ))}
 
-      {/* Cross locking bars (horizontal + vertical) */}
-      <rect x={CX - INNER_R + 8} y={CY - 5} width={(INNER_R - 8) * 2} height={10} rx={5}
-        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
-      <rect x={CX - 5} y={CY - INNER_R + 8} width={10} height={(INNER_R - 8) * 2} rx={5}
-        fill="#1e1e1e" stroke="rgba(120,100,50,0.35)" strokeWidth={1} />
+      {/* ── Drawer cavity interior (always rendered, revealed when drawer slides out) ── */}
+      <rect x={DX} y={OPEN_DY} width={DW} height={DH} fill="url(#interior)" />
+      {/* Cavity inner shadows */}
+      <rect x={DX}           y={OPEN_DY} width={DW}  height={10} fill="rgba(0,0,0,0.55)" />
+      <rect x={DX}           y={OPEN_DY} width={5}   height={DH} fill="rgba(0,0,0,0.32)" />
+      <rect x={DX + DW - 5}  y={OPEN_DY} width={5}   height={DH} fill="rgba(0,0,0,0.42)" />
+      {/* Hanging rod across top of cavity */}
+      <rect x={DX + 4} y={OPEN_DY + 9} width={DW - 8} height={4} rx={2}
+        fill="rgba(120,120,120,0.35)" />
 
-      {/* Concentric detail rings on door face */}
-      <circle cx={CX} cy={CY} r={70} fill="none" stroke="rgba(200,169,110,0.1)" strokeWidth={1} />
-      <circle cx={CX} cy={CY} r={52} fill="none" stroke="rgba(200,169,110,0.08)" strokeWidth={1} />
+      {/* ── Hanging file folders (clipped to cavity) ── */}
+      <g clipPath="url(#cavClip)">
+        {FOLDERS.map((fc, i) => {
+          const n       = FOLDERS.length;
+          const fw      = Math.floor((DW - 6) / n);
+          const fx      = DX + 3 + i * fw;
+          const tabW    = Math.floor(fw * 0.62);
+          const tabH    = 14;
+          // Stagger tab positions left/right alternately
+          const tabXOff = i % 2 === 0 ? 2 : fw - tabW - 2;
+          const tabX    = fx + tabXOff;
+          const bodyY   = OPEN_DY + tabH - 1;
+          const bodyH   = DH - tabH + 1;
 
-      {/* Combination wheel — rotates on spin */}
-      <motion.g animate={wheelCtrl} style={{ originX: `${CX}px`, originY: `${CY}px` }}>
-        {/* Wheel body */}
-        <circle cx={CX} cy={CY} r={WHEEL_R} fill="url(#wheelGrad)" />
-        <circle cx={CX} cy={CY} r={WHEEL_R - 2} fill="none" stroke="rgba(255,230,150,0.2)" strokeWidth={1.5} />
-
-        {/* Notch marks around wheel edge */}
-        {Array.from({ length: 20 }, (_, i) => {
-          const a = (i / 20) * Math.PI * 2;
-          const r1 = WHEEL_R - 3;
-          const r2 = WHEEL_R - 7;
-          return (
-            <line
+          return foldersVisible ? (
+            <motion.g
               key={i}
-              x1={CX + Math.cos(a) * r1} y1={CY + Math.sin(a) * r1}
-              x2={CX + Math.cos(a) * r2} y2={CY + Math.sin(a) * r2}
-              stroke="rgba(0,0,0,0.45)" strokeWidth={i % 5 === 0 ? 2 : 1}
-            />
-          );
+              initial={{ opacity: 0, y: 9 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.065, duration: 0.28, ease: "easeOut" }}
+            >
+              {/* Folder body */}
+              <rect x={fx + 1} y={bodyY} width={fw - 2} height={bodyH}
+                fill={fc.body} opacity={0.82} rx={1} />
+              {/* Folder left edge sheen */}
+              <rect x={fx + 1} y={bodyY} width={1.5} height={bodyH}
+                fill="rgba(255,255,255,0.18)" />
+              {/* Folder body bottom shadow */}
+              <rect x={fx + 1} y={bodyY + bodyH - 3} width={fw - 2} height={3}
+                fill="rgba(0,0,0,0.25)" />
+              {/* Tab */}
+              <rect x={tabX} y={OPEN_DY} width={tabW} height={tabH} rx={2}
+                fill={fc.tab} />
+              {/* Tab top sheen */}
+              <rect x={tabX + 1} y={OPEN_DY + 1} width={tabW - 2} height={2} rx={1}
+                fill="rgba(255,255,255,0.22)" />
+            </motion.g>
+          ) : null;
         })}
+      </g>
 
-        {/* Spokes */}
-        {spokes.map((s, i) => (
-          <line key={i} x1={s.x1} y1={s.y1} x2={s.x2} y2={s.y2}
-            stroke="rgba(0,0,0,0.4)" strokeWidth={2} strokeLinecap="round" />
-        ))}
+      {/* ── Closed drawers (top and bottom) ── */}
+      {DRAWER_YS.map((dy, i) => {
+        if (i === OPEN_IDX) return null;
+        return (
+          <g key={i}>
+            <DrawerFace
+              x={DX} y={dy} w={DW} h={DH}
+              gradId="drwFace"
+              handleGradId="handle"
+            />
+            {/* Gap below drawer */}
+            {i < N_DRAWERS - 1 && (
+              <rect x={DX} y={dy + DH} width={DW} height={DGAP}
+                fill="rgba(0,0,0,0.32)" />
+            )}
+          </g>
+        );
+      })}
 
-        {/* Hub */}
-        <circle cx={CX} cy={CY} r={10} fill="#c8a96e" />
-        <circle cx={CX} cy={CY} r={7}  fill="#8a6020" />
-        <circle cx={CX - 2} cy={CY - 2} r={2.5} fill="rgba(255,240,180,0.45)" />
+      {/* ── Opening drawer (middle) — slides out on tap ── */}
+      <motion.g animate={drawerCtrl}>
+        {/* Extended drawer side shadows deepen as it comes out */}
+        <rect x={DX - 3} y={OPEN_DY} width={3} height={DH + 82}
+          fill="rgba(0,0,0,0.22)" />
+        <rect x={DX + DW} y={OPEN_DY} width={3} height={DH + 82}
+          fill="rgba(0,0,0,0.30)" />
+        {/* Bottom of extended drawer underside shadow */}
+        <rect x={DX} y={OPEN_DY + DH} width={DW} height={6}
+          fill="rgba(0,0,0,0.5)" />
 
-        {/* Dial indicator notch at top */}
-        <path d={`M ${CX - 5} ${CY - WHEEL_R + 1} L ${CX} ${CY - WHEEL_R + 9} L ${CX + 5} ${CY - WHEEL_R + 1} Z`}
-          fill="rgba(0,0,0,0.7)" />
+        <DrawerFace
+          x={DX} y={OPEN_DY} w={DW} h={DH}
+          gradId="drwFaceOpen"
+          handleGradId="handle"
+          prominent
+        />
       </motion.g>
 
-      {/* Static indicator tick above wheel */}
-      <path d={`M ${CX - 4} ${CY - WHEEL_R - 8} L ${CX} ${CY - WHEEL_R - 1} L ${CX + 4} ${CY - WHEEL_R - 8} Z`}
-        fill={GOLD} opacity={0.8} />
+      {/* Gap between drawer 1 and open drawer slot */}
+      <rect x={DX} y={DRAWER_YS[0] + DH} width={DW} height={DGAP}
+        fill="rgba(0,0,0,0.32)" />
 
-      {/* Handle bar on right side */}
-      <rect x={CX + INNER_R - 22} y={CY - 18} width={28} height={36} rx={8}
-        fill="#282828" stroke="rgba(200,169,110,0.3)" strokeWidth={1} />
-      <rect x={CX + INNER_R - 16} y={CY - 12} width={16} height={24} rx={5}
-        fill="url(#hingeGrad)" opacity={0.7} />
+      {/* ── Base plate ── */}
+      <rect x={CAB.x} y={CAB.y + CAB.h - FOOT_H} width={CAB.w} height={FOOT_H}
+        rx={3} fill="url(#cabBase)" />
+      <rect x={CAB.x} y={CAB.y + CAB.h - FOOT_H} width={CAB.w} height={2}
+        fill="rgba(0,0,0,0.45)" />
 
-      {/* Hinge blocks on left side */}
-      {[-28, 18].map((dy, i) => (
-        <rect key={i} x={CX - DOOR_R - 4} y={CY + dy} width={12} height={22} rx={3}
-          fill="#555" stroke="#333" strokeWidth={1} />
+      {/* Cabinet feet */}
+      {[CAB.x + 14, CAB.x + CAB.w - 34].map((fx, i) => (
+        <g key={i}>
+          <rect x={fx} y={CAB.y + CAB.h - 2} width={20} height={8} rx={2}
+            fill="#252525" stroke="rgba(0,0,0,0.5)" strokeWidth={1} />
+          <rect x={fx + 2} y={CAB.y + CAB.h - 2} width={16} height={2} rx={1}
+            fill="rgba(255,255,255,0.05)" />
+        </g>
       ))}
-
-      {/* Door face sheen */}
-      <ellipse cx={CX - 22} cy={CY - 30} rx={28} ry={18}
-        fill="rgba(255,255,255,0.04)" />
     </svg>
+  );
+}
+
+// ── Shared drawer face element ────────────────────────────────────────────────
+
+function DrawerFace({
+  x, y, w, h,
+  gradId, handleGradId,
+  prominent = false,
+}: {
+  x: number; y: number; w: number; h: number;
+  gradId: string; handleGradId: string;
+  prominent?: boolean;
+}) {
+  const labelW = w - 56;
+
+  return (
+    <>
+      {/* Face plate */}
+      <rect x={x} y={y} width={w} height={h} rx={2}
+        fill={`url(#${gradId})`} />
+
+      {/* Top edge highlight */}
+      <rect x={x} y={y} width={w} height={1.5}
+        fill="rgba(255,255,255,0.13)" />
+
+      {/* Bottom shadow line */}
+      <rect x={x} y={y + h - 2} width={w} height={2}
+        fill="rgba(0,0,0,0.45)" />
+
+      {/* Inset side shadows */}
+      <rect x={x}         y={y} width={3} height={h} fill="rgba(0,0,0,0.18)" />
+      <rect x={x + w - 3} y={y} width={3} height={h} fill="rgba(0,0,0,0.28)" />
+
+      {/* Label holder */}
+      <rect x={x + 10} y={y + 9} width={labelW} height={17} rx={2}
+        fill="rgba(0,0,0,0.38)" stroke="rgba(255,255,255,0.06)" strokeWidth={1} />
+      {/* Simulated label lines */}
+      <rect x={x + 14} y={y + 14} width={labelW - 8} height={2} rx={1}
+        fill="rgba(255,255,255,0.08)" />
+      <rect x={x + 14} y={y + 19} width={Math.floor((labelW - 8) * 0.6)} height={2} rx={1}
+        fill="rgba(255,255,255,0.05)" />
+
+      {/* Pull handle recess */}
+      <rect x={x + w - 46} y={y + h / 2 - (prominent ? 8 : 7)} width={36} height={prominent ? 16 : 13} rx={3}
+        fill="#222" stroke="rgba(255,255,255,0.1)" strokeWidth={1} />
+      {/* Pull handle chrome bar */}
+      <rect x={x + w - 42} y={y + h / 2 - (prominent ? 5 : 4)} width={28} height={prominent ? 9 : 7} rx={2}
+        fill={`url(#${handleGradId})`} />
+      {/* Handle top sheen */}
+      <rect x={x + w - 42} y={y + h / 2 - (prominent ? 5 : 4)} width={28} height={2} rx={1}
+        fill="rgba(255,255,255,0.3)" />
+    </>
   );
 }
