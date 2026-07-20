@@ -54,12 +54,12 @@ const OPEN_DY  = DRAWER_YS[OPEN_IDX];
 
 // Hanging-file folder palette
 const FOLDERS = [
-  { body: "#7a9e87", tab: "#4e7a60" },
-  { body: "#c8a96e", tab: "#a07838" },
-  { body: "#8a9abf", tab: "#5a6a9f" },
-  { body: "#b98a8a", tab: "#8a5a5a" },
-  { body: "#a89870", tab: "#7a6a40" },
-  { body: "#8aab9e", tab: "#5a8a7e" },
+  { body: "#e8dcc8", tab: "#c8b898" },
+  { body: "#e8dcc8", tab: "#c8b898" },
+  { body: "#e8dcc8", tab: "#c8b898" },
+  { body: "#e8dcc8", tab: "#c8b898" },
+  { body: "#e8dcc8", tab: "#c8b898" },
+  { body: "#e8dcc8", tab: "#c8b898" },
 ];
 
 interface Props { onEnter: () => void; }
