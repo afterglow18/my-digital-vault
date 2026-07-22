@@ -85,15 +85,21 @@ export function UpgradeSheet({ onClose }: Props) {
     if (status !== "idle") return;
     setErrorMsg(null);
     setStatus("pending");
-    const result: PurchaseResult = await purchase(selected);
-    if (result === "success") {
-      onClose();
-    } else if (result === "unavailable") {
+    try {
+      const result: PurchaseResult = await purchase(selected);
+      if (result === "success") {
+        onClose();
+      } else if (result === "unavailable") {
+        setStatus("idle");
+        setErrorMsg("Purchase unavailable. Make sure you're signed into the App Store and try again.");
+      } else {
+        // cancelled — user dismissed StoreKit sheet, no error needed
+        setStatus("idle");
+      }
+    } catch (err) {
+      console.error("[UpgradeSheet] purchase threw:", err);
       setStatus("idle");
-      setErrorMsg("Purchase unavailable. Make sure you're signed into the App Store and try again.");
-    } else {
-      // cancelled — user dismissed StoreKit sheet, no error needed
-      setStatus("idle");
+      setErrorMsg("Something went wrong. Please try again.");
     }
   }, [status, purchase, selected, onClose]);
 
@@ -101,15 +107,21 @@ export function UpgradeSheet({ onClose }: Props) {
     if (status !== "idle") return;
     setErrorMsg(null);
     setStatus("restoring");
-    const result: PurchaseResult = await restore();
-    if (result === "success") {
-      onClose();
-    } else if (result === "unavailable") {
+    try {
+      const result: PurchaseResult = await restore();
+      if (result === "success") {
+        onClose();
+      } else if (result === "unavailable") {
+        setStatus("idle");
+        setErrorMsg("Restore failed. Check your internet connection and try again.");
+      } else {
+        setStatus("idle");
+        setErrorMsg("No previous purchases found for this Apple ID.");
+      }
+    } catch (err) {
+      console.error("[UpgradeSheet] restore threw:", err);
       setStatus("idle");
-      setErrorMsg("Restore failed. Check your internet connection and try again.");
-    } else {
-      setStatus("idle");
-      setErrorMsg("No previous purchases found for this Apple ID.");
+      setErrorMsg("Restore failed. Please try again.");
     }
   }, [status, restore, onClose]);
 
