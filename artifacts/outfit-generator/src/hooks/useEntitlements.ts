@@ -49,6 +49,15 @@ export function readStoredProduct(): PurchaseProduct | null {
 let _currentTier: Tier = readStoredTier();
 const _subscribers = new Set<() => void>();
 
+// Grace period: after a successful purchase, block any sync-driven downgrade
+// for this many ms. Sandbox IAP can take a moment to propagate to RC servers.
+const PURCHASE_GRACE_MS = 60_000;
+let _lastPurchaseTime = 0;
+
+export function markRecentPurchase(): void {
+  _lastPurchaseTime = Date.now();
+}
+
 function subscribeTier(notify: () => void) {
   _subscribers.add(notify);
   return () => { _subscribers.delete(notify); };
@@ -85,6 +94,20 @@ export async function syncFromRevenueCat(): Promise<void> {
   try {
     const active = await getActiveEntitlement();
     const newTier: Tier = active ? 'unlock' : 'free';
+
+    // Never downgrade within the grace window after a purchase —
+    // sandbox/production RC servers can lag behind StoreKit by several seconds.
+    if (newTier === 'free' && _currentTier !== 'free') {
+      const msSincePurchase = Date.now() - _lastPurchaseTime;
+      if (msSincePurchase < PURCHASE_GRACE_MS) {
+        console.log(
+          `[Entitlements] RC returned inactive entitlement ${msSincePurchase}ms after purchase — ` +
+          `skipping downgrade (grace window ${PURCHASE_GRACE_MS}ms).`
+        );
+        return;
+      }
+    }
+
     if (newTier !== _currentTier) {
       console.log(`[Entitlements] Synced from RC — tier: ${_currentTier} → ${newTier}`);
     }
@@ -149,23 +172,25 @@ export function useEntitlements() {
         const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
 
         // StoreKit completed — trust the purchase immediately.
-        // Set tier now so the UI updates without waiting for an entitlement check.
+        // Set tier + mark grace window so visibilitychange syncs can't
+        // downgrade us back to free while RC servers catch up (sandbox lag).
         const newTier: Tier = PRODUCT_TIER_MAP[product] ?? PRODUCT_TIER[product] ?? 'unlock';
+        markRecentPurchase();
         setGlobalTier(newTier, product);
 
-        // Also verify the entitlement is active in RC (for logging / diagnostics).
-        // If the entitlement name in the RC dashboard differs from ENTITLEMENT_ID,
-        // the purchase still unlocks the app — syncFromRevenueCat() on next launch
-        // will reconcile the real state.
+        // Log entitlement check for diagnostics but don't block on it.
         const active = ENTITLEMENT_ID in (customerInfo.entitlements?.active ?? {});
         if (!active) {
           const available = Object.keys(customerInfo.entitlements?.active ?? {});
           console.warn(
-            `[RevenueCat] Purchase complete but entitlement "${ENTITLEMENT_ID}" not found in customerInfo.` +
-            ` Active entitlements: [${available.join(', ')}]` +
-            ` — check the entitlement ID in your RC dashboard matches "${ENTITLEMENT_ID}".`
+            `[RevenueCat] StoreKit complete but entitlement "${ENTITLEMENT_ID}" not yet in customerInfo.` +
+            ` Active: [${available.join(', ')}]. Will re-verify in 8 s.`
           );
         }
+
+        // Re-verify after 8 s — RC sandbox servers usually propagate by then.
+        // Grace window prevents an earlier sync from downgrading in the meantime.
+        setTimeout(() => syncFromRevenueCat(), 8_000);
 
         return 'success';
       } catch (err: any) {
