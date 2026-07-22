@@ -302,7 +302,7 @@ export default function WelcomePage({ onEnter }: Props) {
           letterSpacing: "0.24em", textTransform: "uppercase",
           color: "rgba(220,220,235,0.92)",
           textShadow: "0 1px 8px rgba(0,0,0,0.6)",
-          marginTop: 4,
+          marginTop: 0,
           paddingLeft: 24, paddingRight: 24,
           textAlign: "center",
         }}>
