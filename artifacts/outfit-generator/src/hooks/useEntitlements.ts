@@ -148,17 +148,26 @@ export function useEntitlements() {
 
         const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
 
-        // Always trust the CustomerInfo returned by the purchase call.
+        // StoreKit completed — trust the purchase immediately.
+        // Set tier now so the UI updates without waiting for an entitlement check.
+        const newTier: Tier = PRODUCT_TIER_MAP[product] ?? PRODUCT_TIER[product] ?? 'unlock';
+        setGlobalTier(newTier, product);
+
+        // Also verify the entitlement is active in RC (for logging / diagnostics).
+        // If the entitlement name in the RC dashboard differs from ENTITLEMENT_ID,
+        // the purchase still unlocks the app — syncFromRevenueCat() on next launch
+        // will reconcile the real state.
         const active = ENTITLEMENT_ID in (customerInfo.entitlements?.active ?? {});
-        if (active) {
-          const newTier: Tier = PRODUCT_TIER_MAP[product] ?? PRODUCT_TIER[product] ?? 'unlock';
-          setGlobalTier(newTier, product);
-          return 'success';
+        if (!active) {
+          const available = Object.keys(customerInfo.entitlements?.active ?? {});
+          console.warn(
+            `[RevenueCat] Purchase complete but entitlement "${ENTITLEMENT_ID}" not found in customerInfo.` +
+            ` Active entitlements: [${available.join(', ')}]` +
+            ` — check the entitlement ID in your RC dashboard matches "${ENTITLEMENT_ID}".`
+          );
         }
 
-        // Purchase call returned but entitlement is not active — treat as
-        // cancelled / pending (e.g. StoreKit ask-to-buy).
-        return 'cancelled';
+        return 'success';
       } catch (err: any) {
         if (err?.code === 'PURCHASE_CANCELLED' || err?.userCancelled === true) {
           return 'cancelled';
