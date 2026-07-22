@@ -46,7 +46,11 @@ export async function initRevenueCat(): Promise<void> {
   const apiKey   = isNative ? (IOS_KEY ?? TEST_KEY) : (TEST_KEY ?? IOS_KEY);
 
   if (!apiKey) {
-    console.warn("[RevenueCat] No API key found — purchases disabled");
+    console.error(
+      "[RevenueCat] ❌ No API key found — purchases disabled.\n" +
+      `  isNative=${isNative}  IOS_KEY=${IOS_KEY ? "set" : "MISSING"}  TEST_KEY=${TEST_KEY ? "set" : "MISSING"}\n` +
+      "  For Codemagic builds add VITE_REVENUECAT_IOS_API_KEY to the workflow env vars."
+    );
     return;
   }
 
