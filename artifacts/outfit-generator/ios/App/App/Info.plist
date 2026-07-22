@@ -6,6 +6,12 @@
 	<false/>
 	<key>NSFaceIDUsageDescription</key>
 	<string>My Digital Vault uses Face ID to keep your collection private.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>My Digital Filing Cabinet uses the camera so you can photograph documents and items to add to your cabinet.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>My Digital Filing Cabinet needs access to your photo library so you can choose existing photos to add to your cabinet.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>My Digital Filing Cabinet saves captured photos to your library so you can access them later.</string>
     <key>CAPACITOR_DEBUG</key>
 	<string>$(CAPACITOR_DEBUG)</string>
 	<key>CFBundleDevelopmentRegion</key>
