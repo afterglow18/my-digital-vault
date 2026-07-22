@@ -298,10 +298,11 @@ export default function WelcomePage({ onEnter }: Props) {
           My Digital<br />Filing Cabinet
         </div>
         <div style={{
-          fontSize: 11, fontWeight: 700,
-          letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "rgba(210,210,220,0.80)",
-          marginTop: 2,
+          fontSize: 13, fontWeight: 800,
+          letterSpacing: "0.24em", textTransform: "uppercase",
+          color: "rgba(220,220,235,0.92)",
+          textShadow: "0 1px 8px rgba(0,0,0,0.6)",
+          marginTop: 4,
           paddingLeft: 24, paddingRight: 24,
           textAlign: "center",
         }}>
@@ -315,27 +316,36 @@ export default function WelcomePage({ onEnter }: Props) {
           <motion.div
             key="tap-hint"
             initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{ opacity: [0, 1] }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ delay: 1.0, duration: 0.5 }}
             style={{
               position: "absolute",
-              // Centre of middle drawer: (OPEN_DY + DH/2) / VBH as %
-              // = (348 + 110) / 844 ≈ 54.4%
               top: `${((OPEN_DY + DH * 0.72) / VBH) * 100}%`,
               left: 0, right: 0,
               textAlign: "center",
               zIndex: 3, pointerEvents: "none",
             }}
           >
-            <span style={{
-              fontSize: 12, fontWeight: 700, letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              color: "rgba(230,230,240,0.9)",
-              textShadow: "0 0 8px rgba(200,210,255,0.6), 0 0 20px rgba(180,190,255,0.3)",
-            }}>
+            <motion.span
+              animate={{
+                opacity: [0.6, 1, 0.6],
+                textShadow: [
+                  "0 0 6px rgba(220,230,255,0.3), 0 0 14px rgba(200,215,255,0.15)",
+                  "0 0 14px rgba(220,230,255,0.9), 0 0 28px rgba(200,215,255,0.55), 0 0 44px rgba(180,200,255,0.25)",
+                  "0 0 6px rgba(220,230,255,0.3), 0 0 14px rgba(200,215,255,0.15)",
+                ],
+              }}
+              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+              style={{
+                display: "inline-block",
+                fontSize: 13, fontWeight: 800, letterSpacing: "0.26em",
+                textTransform: "uppercase",
+                color: "#e8ecff",
+              }}
+            >
               tap to open
-            </span>
+            </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
