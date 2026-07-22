@@ -298,10 +298,12 @@ export default function WelcomePage({ onEnter }: Props) {
           My Digital<br />Filing Cabinet
         </div>
         <div style={{
-          fontSize: 10, fontWeight: 500,
+          fontSize: 11, fontWeight: 700,
           letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "rgba(210,210,220,0.38)",
-          marginTop: 6,
+          color: "rgba(210,210,220,0.75)",
+          marginTop: 8,
+          paddingLeft: 24, paddingRight: 24,
+          textAlign: "center",
         }}>
           your collection, secured
         </div>
