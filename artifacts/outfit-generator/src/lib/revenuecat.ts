@@ -12,7 +12,7 @@ import type { PurchaseProduct, Tier } from "@/types/local";
 const TEST_KEY = import.meta.env.VITE_REVENUECAT_TEST_API_KEY as string;
 const IOS_KEY  = import.meta.env.VITE_REVENUECAT_IOS_API_KEY  as string;
 
-export const ENTITLEMENT_ID = "unlock";
+export const ENTITLEMENT_ID = "My Digital Filing Cabinet Pro";
 
 /**
  * Map app product keys → RC package identifiers AND packageType enum values.
