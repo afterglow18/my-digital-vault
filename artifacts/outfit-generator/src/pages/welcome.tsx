@@ -300,8 +300,8 @@ export default function WelcomePage({ onEnter }: Props) {
         <div style={{
           fontSize: 11, fontWeight: 700,
           letterSpacing: "0.28em", textTransform: "uppercase",
-          color: "rgba(210,210,220,0.75)",
-          marginTop: 8,
+          color: "rgba(210,210,220,0.80)",
+          marginTop: 2,
           paddingLeft: 24, paddingRight: 24,
           textAlign: "center",
         }}>
@@ -329,9 +329,10 @@ export default function WelcomePage({ onEnter }: Props) {
             }}
           >
             <span style={{
-              fontSize: 11, letterSpacing: "0.22em",
+              fontSize: 12, fontWeight: 700, letterSpacing: "0.22em",
               textTransform: "uppercase",
-              color: "rgba(220,220,230,0.5)",
+              color: "rgba(230,230,240,0.9)",
+              textShadow: "0 0 8px rgba(200,210,255,0.6), 0 0 20px rgba(180,190,255,0.3)",
             }}>
               tap to open
             </span>
