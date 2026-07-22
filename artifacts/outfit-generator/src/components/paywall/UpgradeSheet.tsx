@@ -75,28 +75,41 @@ export function UpgradeSheet({ onClose }: Props) {
   const { purchase, restore } = useEntitlements();
   const [selected, setSelected] = useState<PurchaseProduct>("lifetime");
   const [status, setStatus]     = useState<"idle" | "pending" | "restoring">("idle");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const selectedPlan = PLANS.find(p => p.id === selected)!;
 
+  const clearError = () => setErrorMsg(null);
+
   const handlePurchase = useCallback(async () => {
     if (status !== "idle") return;
+    setErrorMsg(null);
     setStatus("pending");
     const result: PurchaseResult = await purchase(selected);
     if (result === "success") {
       onClose();
+    } else if (result === "unavailable") {
+      setStatus("idle");
+      setErrorMsg("Purchase unavailable. Make sure you're signed into the App Store and try again.");
     } else {
+      // cancelled — user dismissed StoreKit sheet, no error needed
       setStatus("idle");
     }
   }, [status, purchase, selected, onClose]);
 
   const handleRestore = useCallback(async () => {
     if (status !== "idle") return;
+    setErrorMsg(null);
     setStatus("restoring");
     const result: PurchaseResult = await restore();
     if (result === "success") {
       onClose();
+    } else if (result === "unavailable") {
+      setStatus("idle");
+      setErrorMsg("Restore failed. Check your internet connection and try again.");
     } else {
       setStatus("idle");
+      setErrorMsg("No previous purchases found for this Apple ID.");
     }
   }, [status, restore, onClose]);
 
@@ -239,6 +252,17 @@ export function UpgradeSheet({ onClose }: Props) {
         className="px-5 flex flex-col gap-2.5 flex-shrink-0 mt-auto"
         style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
       >
+        {/* Error banner */}
+        {errorMsg && (
+          <button
+            onClick={clearError}
+            className="w-full text-center text-xs font-semibold px-3 py-2.5 rounded-lg"
+            style={{ background: "#fee2e2", color: "#b91c1c", border: "1px solid #fca5a5" }}
+          >
+            {errorMsg} (tap to dismiss)
+          </button>
+        )}
+
         <button
           onClick={handlePurchase}
           disabled={status === "pending"}

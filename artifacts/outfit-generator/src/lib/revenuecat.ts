@@ -14,12 +14,17 @@ const IOS_KEY  = import.meta.env.VITE_REVENUECAT_IOS_API_KEY  as string;
 
 export const ENTITLEMENT_ID = "unlock";
 
-/** Map app product keys → RevenueCat package identifiers */
-const PACKAGE_ID: Record<PurchaseProduct, string> = {
-  monthly:  "$rc_monthly",
-  yearly:   "$rc_annual",
-  lifetime: "$rc_lifetime",
-  premium:  "$rc_lifetime", // premium uses lifetime package as fallback
+/**
+ * Map app product keys → RC package identifiers AND packageType enum values.
+ * The SDK sets p.identifier = "$rc_monthly" etc. for default packages and
+ * p.packageType = "MONTHLY" / "ANNUAL" / "LIFETIME".
+ * We check both so either custom or default package naming works.
+ */
+const PACKAGE_IDENTIFIERS: Record<PurchaseProduct, string[]> = {
+  monthly:  ["$rc_monthly",  "MONTHLY"],
+  yearly:   ["$rc_annual",   "ANNUAL"],
+  lifetime: ["$rc_lifetime", "LIFETIME"],
+  premium:  ["$rc_lifetime", "LIFETIME"],
 };
 
 /** Which tier each product unlocks */
@@ -62,15 +67,23 @@ export async function initRevenueCat(): Promise<void> {
 export async function getPackageForProduct(
   product: PurchaseProduct,
 ): Promise<PurchasesPackage | null> {
-  const pkgId = PACKAGE_ID[product];
+  const ids = PACKAGE_IDENTIFIERS[product];
   const offerings: PurchasesOfferings = await Purchases.getOfferings();
   const current = offerings.current;
-  if (!current) return null;
-  return (
-    current.availablePackages.find(
-      (p: PurchasesPackage) => p.packageType === pkgId || p.identifier === pkgId,
-    ) ?? null
-  );
+  if (!current) {
+    console.warn("[RevenueCat] No current offering returned — check RC dashboard configuration");
+    return null;
+  }
+  const pkg = current.availablePackages.find(
+    (p: PurchasesPackage) => ids.includes(p.identifier) || ids.includes(p.packageType as string),
+  ) ?? null;
+  if (!pkg) {
+    console.warn(
+      `[RevenueCat] Package not found for "${product}". Looking for: ${ids.join(", ")}. ` +
+      `Available: ${current.availablePackages.map((p: PurchasesPackage) => `${p.identifier}(${p.packageType})`).join(", ")}`
+    );
+  }
+  return pkg;
 }
 
 /** Check whether the user currently has the "unlock" entitlement active. */
