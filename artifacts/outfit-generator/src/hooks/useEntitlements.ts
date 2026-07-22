@@ -98,7 +98,10 @@ export async function syncFromRevenueCat(): Promise<void> {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type PurchaseResult = 'success' | 'cancelled' | 'unavailable';
+export type PurchaseResult =
+  | 'success'
+  | 'cancelled'
+  | { kind: 'unavailable'; reason: string };
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
@@ -121,10 +124,26 @@ export function useEntitlements() {
   const purchase = useCallback(
     async (product: PurchaseProduct): Promise<PurchaseResult> => {
       try {
-        const pkg = await getPackageForProduct(product);
+        let pkg;
+        try {
+          pkg = await getPackageForProduct(product);
+        } catch (offerErr: any) {
+          // RC was not initialised (e.g. missing API key baked by Codemagic)
+          // or getOfferings() failed for another reason.
+          console.error('[RevenueCat] getOfferings threw:', offerErr);
+          const code: string = offerErr?.code ?? offerErr?.message ?? String(offerErr);
+          const reason = code.toLowerCase().includes('configured') || !import.meta.env.VITE_REVENUECAT_IOS_API_KEY
+            ? 'RevenueCat is not configured. Make sure VITE_REVENUECAT_IOS_API_KEY is set in Codemagic env vars and rebuild.'
+            : `Could not load products (${code}). Check your internet and try again.`;
+          return { kind: 'unavailable', reason };
+        }
+
         if (!pkg) {
           console.warn('[RevenueCat] Package not found for product:', product);
-          return 'unavailable';
+          return {
+            kind: 'unavailable',
+            reason: 'This product could not be found in the App Store. Make sure products are approved in App Store Connect and linked in RevenueCat.',
+          };
         }
 
         const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
@@ -145,7 +164,12 @@ export function useEntitlements() {
           return 'cancelled';
         }
         console.error('[RevenueCat] Purchase error:', err);
-        return 'unavailable';
+        const code: string = err?.code ?? err?.message ?? String(err);
+        // Surface a hint for the most common TestFlight mistake
+        const reason = code.includes('NOT_ALLOWED') || code.includes('not allowed')
+          ? 'Purchases not allowed on this device. For TestFlight testing, sign in with a Sandbox Apple ID at Settings → App Store → Sandbox Account.'
+          : `Purchase failed (${code}). For TestFlight, use a Sandbox Apple ID at Settings → App Store → Sandbox Account.`;
+        return { kind: 'unavailable', reason };
       }
     },
     [],
@@ -161,9 +185,10 @@ export function useEntitlements() {
       // RC confirmed no active entitlement — downgrade if currently elevated.
       setGlobalTier('free');
       return 'cancelled';
-    } catch (err) {
+    } catch (err: any) {
       console.error('[RevenueCat] Restore error:', err);
-      return 'unavailable';
+      const code: string = err?.code ?? err?.message ?? String(err);
+      return { kind: 'unavailable', reason: `Restore failed (${code}). Check your internet and try again.` };
     }
   }, []);
 

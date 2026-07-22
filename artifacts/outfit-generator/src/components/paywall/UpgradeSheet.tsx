@@ -89,11 +89,13 @@ export function UpgradeSheet({ onClose }: Props) {
       const result: PurchaseResult = await purchase(selected);
       if (result === "success") {
         onClose();
-      } else if (result === "unavailable") {
+      } else if (result === "cancelled") {
+        // user dismissed StoreKit sheet — no error banner
         setStatus("idle");
-        setErrorMsg("Purchase unavailable. Make sure you're signed into the App Store and try again.");
+      } else if (typeof result === "object" && result.kind === "unavailable") {
+        setStatus("idle");
+        setErrorMsg(result.reason);
       } else {
-        // cancelled — user dismissed StoreKit sheet, no error needed
         setStatus("idle");
       }
     } catch (err) {
@@ -111,12 +113,14 @@ export function UpgradeSheet({ onClose }: Props) {
       const result: PurchaseResult = await restore();
       if (result === "success") {
         onClose();
-      } else if (result === "unavailable") {
-        setStatus("idle");
-        setErrorMsg("Restore failed. Check your internet connection and try again.");
-      } else {
+      } else if (result === "cancelled") {
         setStatus("idle");
         setErrorMsg("No previous purchases found for this Apple ID.");
+      } else if (typeof result === "object" && result.kind === "unavailable") {
+        setStatus("idle");
+        setErrorMsg(result.reason);
+      } else {
+        setStatus("idle");
       }
     } catch (err) {
       console.error("[UpgradeSheet] restore threw:", err);
