@@ -16,22 +16,92 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const navItems = [
     { href: "/",       label: "Cabinet",   icon: null,       badge: wardrobeCount },
-    { href: "/saved",  label: "Saved",   icon: Bookmark },
-    { href: "/backup", label: "Account", icon: UserCircle },
+    { href: "/saved",  label: "Saved",     icon: Bookmark },
+    { href: "/backup", label: "Account",   icon: UserCircle },
   ];
 
   return (
-    <div className="min-h-[100dvh] w-full bg-[#f8f9fa] flex justify-center lg:py-8 lg:px-4">
-      {/* Phone Frame Constraint for Desktop */}
-      <div className="w-full max-w-md bg-background h-[100dvh] lg:min-h-[850px] lg:h-[850px] lg:border-[6px] lg:border-black lg:rounded-[3rem] lg:shadow-2xl relative overflow-hidden flex flex-col lg:overflow-y-auto">
+    <div className="h-[100dvh] w-full flex overflow-hidden">
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-[90px] relative">
+      {/* ── Sidebar — iPad / Desktop only (≥ 768 px) ───────────────────── */}
+      <aside className="hidden md:flex md:flex-col md:w-52 md:flex-shrink-0 bg-[#141414] border-r-2 border-black">
+        {/* Branding */}
+        <div className="px-5 pt-10 pb-6 border-b border-white/10">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 mb-1">My</p>
+          <h1
+            className="font-black uppercase leading-none text-white"
+            style={{ fontSize: 22, letterSpacing: "-0.02em" }}
+          >
+            Digital<br />Filing<br />Cabinet
+          </h1>
+        </div>
+
+        {/* Nav items */}
+        <nav className="flex-1 px-3 py-5 flex flex-col gap-1">
+          {navItems.map((item) => {
+            const isActive = location === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-150",
+                  isActive
+                    ? "bg-white/10 shadow-inner"
+                    : "hover:bg-white/5 active:scale-[0.98]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "p-2 rounded-full border-2 relative transition-all shrink-0",
+                    isActive ? "border-white/40" : "border-transparent",
+                  )}
+                  style={isActive ? { background: "linear-gradient(to bottom, #8a8a8a, #555)" } : undefined}
+                >
+                  {Icon ? (
+                    <Icon
+                      className={cn("w-5 h-5", isActive ? "text-white" : "text-white/40")}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                  ) : (
+                    <span className="text-lg leading-none select-none">🔐</span>
+                  )}
+                  {/* Badge */}
+                  {item.badge !== undefined && item.badge > 0 && (
+                    <div className="absolute -top-1.5 -right-1.5 bg-white text-black text-[9px] font-black border border-black w-4 h-4 flex items-center justify-center rounded-full">
+                      {item.badge > 99 ? "99+" : item.badge}
+                    </div>
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    "text-sm font-bold uppercase tracking-wide",
+                    isActive ? "text-white" : "text-white/40",
+                  )}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="px-5 pb-8">
+          <p className="text-[10px] text-white/15 uppercase tracking-wider">My Digital Vault</p>
+        </div>
+      </aside>
+
+      {/* ── Content + Mobile Bottom Nav ─────────────────────────────────── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative bg-background">
+        {/* Main scrollable content */}
+        <main className="flex-1 overflow-y-auto pb-[90px] md:pb-0 relative">
           {children}
         </main>
 
-        {/* Bottom Navigation */}
-        <nav className="absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
+        {/* Bottom Navigation — iPhone only */}
+        <nav className="md:hidden absolute bottom-0 left-0 right-0 bg-white border-t-[3px] border-black p-3 pb-safe z-[40]">
           <ul className="flex items-center justify-around">
             {navItems.map((item) => {
               const isActive = location === item.href;
@@ -50,21 +120,15 @@ export function AppLayout({ children }: AppLayoutProps) {
                     >
                       {Icon ? (
                         <Icon
-                          className={cn(
-                            "w-6 h-6",
-                            isActive ? "text-black" : "text-muted-foreground",
-                            "",
-                          )}
+                          className={cn("w-6 h-6", isActive ? "text-black" : "text-muted-foreground")}
                           strokeWidth={isActive ? 2.5 : 2}
                         />
                       ) : (
                         <span className="text-xl leading-none select-none">🔐</span>
                       )}
-
-                      {/* Badge */}
                       {item.badge !== undefined && item.badge > 0 && (
                         <div className="absolute -top-2 -right-2 bg-secondary text-black text-[10px] font-bold border-2 border-black w-5 h-5 flex items-center justify-center rounded-full shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                          {item.badge > 99 ? '99+' : item.badge}
+                          {item.badge > 99 ? "99+" : item.badge}
                         </div>
                       )}
                     </div>

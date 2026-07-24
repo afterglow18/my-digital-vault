@@ -39,7 +39,17 @@ const ROWS: { key: RowKey; btnLabel: string }[] = [
 // ── Image constants ───────────────────────────────────────────────────────────
 const IMG_W = 841;
 const IMG_H = 1870;
-const NAV_H = 90;
+const NAV_H_MOBILE = 90; // bottom tab bar height on iPhone
+// On iPad/desktop the sidebar replaces the bottom nav — no height offset needed.
+function useNavOffset() {
+  const [offset, setOffset] = React.useState(() => window.innerWidth >= 768 ? 0 : NAV_H_MOBILE);
+  React.useEffect(() => {
+    const update = () => setOffset(window.innerWidth >= 768 ? 0 : NAV_H_MOBILE);
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return offset;
+}
 
 // Fraction of image height reserved at the top of every section for the heading.
 const LABEL_FRAC = 0.038;
@@ -89,6 +99,7 @@ const pY = (ir: ImgRect, f: number) => ir.top    + ir.height * f;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function WardrobePage() {
+  const navOffset = useNavOffset();
   const containerRef = useRef<HTMLDivElement>(null!);
   const ir = useImageRect(containerRef);
 
@@ -198,7 +209,7 @@ export default function WardrobePage() {
       style={{
         position: "relative",
         width: "100%",
-        height: `calc(100dvh - ${NAV_H}px)`,
+        height: `calc(100dvh - ${navOffset}px)`,
         overflow: "hidden",
         transform: "translateZ(0)", // force iOS WKWebView to honour overflow:hidden
         background: "#111111",
