@@ -30,9 +30,6 @@ export default defineConfig({
         ]
       : []),
   ],
-  optimizeDeps: {
-    exclude: ['@imgly/background-removal'],
-  },
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, 'src'),
