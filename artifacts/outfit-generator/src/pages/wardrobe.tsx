@@ -511,6 +511,7 @@ export default function WardrobePage() {
           onOpenChange={open => !open && setAddCategory(null)}
           category={addCategory}
           existingCount={rowData[addCategory as RowKey]?.length ?? 0}
+          onCreated={item => { setAddCategory(null); setDetailsItem(item); }}
         />
       )}
     </AnimatePresence>
