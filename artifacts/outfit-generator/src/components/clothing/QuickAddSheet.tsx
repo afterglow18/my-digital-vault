@@ -9,7 +9,7 @@
  */
 import React, { useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
-import { X, Loader2, Check } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useCreateClothingItem, getListClothingQueryKey } from "@/hooks/useLocalWardrobe";
 import type { ClothingItem } from "@/types/local";
 import { useQueryClient } from "@tanstack/react-query";
@@ -62,12 +62,32 @@ interface Props {
   onCreated?:    (item: ClothingItem) => void;
 }
 
-const PHOTO_TIPS = [
-  "Photograph individual products or bundle multiple items together.",
-  "Lay everything flat on a plain background.",
-  "Take the photo from directly above.",
-  "Keep all items fully in frame.",
-] as const;
+const PHOTO_TIPS: Record<Category, readonly string[]> = {
+  "documents": [
+    "📄 Photograph one page or document at a time.",
+    "📑 Lay the document flat on a plain background.",
+    "📷 Take the photo from directly above.",
+    "✅ Keep the entire page fully in frame.",
+  ],
+  "finances": [
+    "📄 Photograph one page or document at a time.",
+    "📑 Lay the document flat on a plain background.",
+    "📷 Take the photo from directly above.",
+    "✅ Keep the entire page fully in frame.",
+  ],
+  "personal": [
+    "🖼️ Photograph one item or keepsake at a time.",
+    "🪞 Lay it flat on a plain, uncluttered background.",
+    "📷 Take the photo from directly above.",
+    "✅ Keep the entire item fully in frame.",
+  ],
+  "recipes-meal-plans": [
+    "📖 Photograph one recipe or page at a time.",
+    "📑 Lay it flat on a plain, uncluttered surface.",
+    "📷 Take the photo from directly above.",
+    "✅ Keep all text fully in frame.",
+  ],
+};
 
 export function QuickAddSheet({ open, onOpenChange, category, existingCount, onCreated }: Props) {
   const [phase,    setPhase]    = useState<Phase>("pick");
@@ -227,17 +247,12 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
 
               <div className="border-2 border-black rounded-2xl bg-white p-4
                               shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                <p className="font-display font-bold text-sm uppercase tracking-tight mb-3 flex items-center gap-2">
-                  <span>📸</span> PHOTO TIPS
+                <p className="font-display font-bold text-sm uppercase tracking-tight mb-3">
+                  PHOTO TIPS
                 </p>
                 <ul className="flex flex-col gap-2">
-                  {PHOTO_TIPS.map((tip) => (
-                    <li key={tip} className="flex items-start gap-2 text-sm text-black/70 leading-snug">
-                      <span className="mt-0.5 w-4 h-4 border-2 border-black rounded-sm
-                                       flex items-center justify-center flex-shrink-0"
-                        style={{ background: "#787878" }}>
-                        <Check className="w-2.5 h-2.5" strokeWidth={3} />
-                      </span>
+                  {PHOTO_TIPS[category].map((tip) => (
+                    <li key={tip} className="text-sm text-black/70 leading-snug">
                       {tip}
                     </li>
                   ))}
