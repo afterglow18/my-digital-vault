@@ -8,7 +8,7 @@
  * Photos are saved directly to IndexedDB as compressed data URLs.
  */
 import React, { useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { X, Loader2, Check } from "lucide-react";
 import { useCreateClothingItem, getListClothingQueryKey } from "@/hooks/useLocalWardrobe";
 import type { ClothingItem } from "@/types/local";
@@ -180,19 +180,14 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
         )}
       </div>
 
-      {/* Body */}
+      {/* Body — plain conditionals, no AnimatePresence around phases.
+           AnimatePresence mode="wait" creates a window where neither phase is
+           mounted (old exits, new hasn't entered), causing a blank screen. */}
       <div className="flex-1 flex flex-col overflow-y-auto">
-        <AnimatePresence mode="wait">
 
           {/* ── PICK ── */}
           {phase === "pick" && (
-            <motion.div
-              key="pick"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col p-5 gap-5"
-            >
+            <div className="flex flex-col p-5 gap-5">
               {errorMsg && (
                 <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-center">
                   {errorMsg}
@@ -248,18 +243,12 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* ── UPLOADING ── */}
           {phase === "uploading" && (
-            <motion.div
-              key="uploading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex-1 flex flex-col items-center justify-center gap-5 p-6"
-            >
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 p-6">
               <div className="w-28 h-28 border-4 border-black rounded-3xl bg-white
                               flex items-center justify-center
                               shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
@@ -273,10 +262,9 @@ export function QuickAddSheet({ open, onOpenChange, category, existingCount, onC
                     : "Adding to your cabinet."}
                 </p>
               </div>
-            </motion.div>
+            </div>
           )}
 
-        </AnimatePresence>
       </div>
 
       {/* Hidden file inputs */}
