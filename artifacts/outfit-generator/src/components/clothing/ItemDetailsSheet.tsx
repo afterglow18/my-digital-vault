@@ -234,10 +234,10 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             placeholder="$49.99"
           />
           <Field
-            label="Date"
+            label="Date / Year"
             value={form.purchaseDate}
             onChange={patch("purchaseDate") as (v: string) => void}
-            type="date"
+            placeholder="e.g. 2024, Jan 2025…"
           />
         </div>
 
