@@ -82,7 +82,7 @@ const PHOTO_TIPS: Record<Category, readonly string[]> = {
     "✅ Keep the entire item fully in frame.",
   ],
   "recipes-meal-plans": [
-    "📖 Photograph one recipe or page at a time.",
+    "📖 Photograph one page at a time.",
     "📑 Lay it flat on a plain, uncluttered surface.",
     "📷 Take the photo from directly above.",
     "✅ Keep all text fully in frame.",
