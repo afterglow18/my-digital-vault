@@ -305,7 +305,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                          transition-all disabled:opacity-50"
               style={{ background: "linear-gradient(to bottom, #8a8a8a, #666666)" }}
             >
-              Making This Today
+              Made Today
             </button>
           ) : (
             <div className="flex gap-2">
