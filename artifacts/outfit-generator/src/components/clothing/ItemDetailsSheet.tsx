@@ -311,12 +311,12 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
             <div className="flex gap-2">
               {/* Logged state — full width green-ish pill */}
               <div
-                className="flex-1 py-3 rounded-xl border-2 border-black font-bold uppercase
+                className="flex-1 py-3 rounded-xl border-2 font-bold uppercase
                            text-sm tracking-wide flex items-center justify-center gap-2"
-                style={{ background: "#e8f5e9", color: "#2e7d32", borderColor: "#2e7d32" }}
+                style={{ background: "#f0f0f0", color: "#555555", borderColor: "rgba(0,0,0,0.18)" }}
               >
                 <Check className="w-4 h-4" strokeWidth={2.5} />
-                Logged ✓
+                Logged
               </div>
               {/* Undo button */}
               <button
