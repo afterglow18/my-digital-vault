@@ -1,25 +1,24 @@
 /**
  * WelcomePage — Full-screen filing cabinet drawer pull-open animation.
  *
- * The cabinet SVG fills the entire screen.  Tapping the middle drawer
- * slides it forward (down the screen = toward the viewer), revealing
- * hanging file folders inside the cavity, then crossfades to the hero image.
+ * The cabinet SVG fills the entire screen. Tapping "Open" slides the middle
+ * drawer out, reveals hanging file folders, then fades the whole screen to
+ * the app. The hero image is shown in HeroSplash (Phase 1) — it does NOT
+ * appear here again.
  *
- * SPLASH  : full-screen closed cabinet, "tap to open" hint on middle drawer.
+ * SPLASH  : full-screen closed cabinet + branding + Open button.
  * PULLING : middle drawer slides out.
  * OPEN    : hanging folders fan in inside cavity.
- * HERO    : hero image crossfades in.
  * EXITING : screen fades out → onEnter().
  */
 
 import { useState, useCallback, useRef } from "react";
 import { motion, useAnimation, AnimatePresence } from "framer-motion";
 
-type Phase = "splash" | "pulling" | "open" | "hero" | "exiting";
+type Phase = "splash" | "pulling" | "open" | "exiting";
 
 const PULL_MS = 740;
 const HOLD_MS = 420;
-const HERO_MS = 500;
 const EXIT_MS = 500;
 
 // ViewBox dimensions — matches a typical modern iPhone aspect ratio.
@@ -67,7 +66,6 @@ interface Props { onEnter: () => void; }
 export default function WelcomePage({ onEnter }: Props) {
   const [phase,          setPhase]          = useState<Phase>("splash");
   const [foldersVisible, setFoldersVisible] = useState(false);
-  const [heroVisible,    setHeroVisible]    = useState(false);
   const calledRef  = useRef(false);
   const drawerCtrl = useAnimation();
 
@@ -82,7 +80,6 @@ export default function WelcomePage({ onEnter }: Props) {
     setPhase("pulling");
 
     // Drawer slides forward (down the screen = toward viewer).
-    // 300px is enough to push it off-screen on any phone size.
     drawerCtrl.start({
       y: 300,
       transition: { duration: PULL_MS / 1000, ease: [0.22, 0.1, 0.22, 1] },
@@ -94,13 +91,9 @@ export default function WelcomePage({ onEnter }: Props) {
       setPhase("open");
     }, PULL_MS * 0.40);
 
-    // Hero fades in after drawer is fully out
-    setTimeout(() => setHeroVisible(true), PULL_MS + 120);
-    setTimeout(() => setPhase("hero"),     PULL_MS + 250);
-
-    // Exit
-    setTimeout(() => setPhase("exiting"), PULL_MS + HOLD_MS + 200);
-    setTimeout(finish,                    PULL_MS + HOLD_MS + 200 + EXIT_MS);
+    // Exit — no hero image here; it was already shown in HeroSplash (Phase 1)
+    setTimeout(() => setPhase("exiting"), PULL_MS + HOLD_MS);
+    setTimeout(finish,                    PULL_MS + HOLD_MS + EXIT_MS);
   };
 
   return (
@@ -114,21 +107,6 @@ export default function WelcomePage({ onEnter }: Props) {
         overflow: "hidden",
       }}
     >
-      {/* ── Hero image (fades in after drawer opens) ── */}
-      <motion.img
-        src="/vault-door.png"
-        alt="My Digital Filing Cabinet"
-        draggable={false}
-        animate={{ opacity: heroVisible ? 1 : 0 }}
-        transition={{ duration: HERO_MS / 1000, ease: "easeOut" }}
-        style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%",
-          objectFit: "cover", objectPosition: "center",
-          zIndex: 1,
-        }}
-      />
-
       {/* ── Full-screen cabinet SVG ── */}
       <svg
         viewBox={`0 0 ${VBW} ${VBH}`}
