@@ -116,6 +116,9 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   // prevLastMadeDate: the lastMadeDate before the user tapped "Making This Today"
   // in this session. null means either never logged, or logged before app opened.
   const [prevLastMadeDate, setPrevLastMadeDate] = useState<string | null>(null);
+  // loggedToday: optimistic local flag so the button flips instantly on tap
+  // without waiting for the async mutation + refetch cycle to complete.
+  const [loggedToday, setLoggedToday] = useState(false);
 
   const updateItem  = useUpdateClothingItem();
   const deleteItem  = useDeleteClothingItem();
@@ -127,6 +130,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       setForm(toForm(item));
       setTimesMadeInput(String(item.timesWorn ?? 0));
       setPrevLastMadeDate(null);
+      setLoggedToday(item.lastMadeDate === todayLocal());
     }
     setShowDeleteConfirm(false);
   }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -138,9 +142,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
 
   if (!item || !form) return null;
 
-  const today        = todayLocal(); // re-evaluated each render → auto-resets at midnight
-  const isRecipe     = item.category === "recipes-meal-plans";
-  const isLoggedToday = item.lastMadeDate === today;
+  const today    = todayLocal(); // re-evaluated each render → auto-resets at midnight
+  const isRecipe = item.category === "recipes-meal-plans";
 
   const dirty = isDirty(form, item);
   const patch = (key: keyof FormState) => (value: string | boolean) =>
@@ -172,6 +175,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   // ── Cooking tracker actions ──────────────────────────────────────────────────
   const handleLogToday = () => {
     setPrevLastMadeDate(item.lastMadeDate); // capture for undo
+    setLoggedToday(true);                  // optimistic — flip immediately
     updateItem.mutate({
       id: item.id,
       data: {
@@ -182,10 +186,11 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   };
 
   const handleUndo = () => {
+    setLoggedToday(false);                 // optimistic — flip immediately
     updateItem.mutate({
       id: item.id,
       data: {
-        lastMadeDate: prevLastMadeDate,            // restore (may be null)
+        lastMadeDate: prevLastMadeDate,    // restore (may be null)
         timesWorn: Math.max(0, (item.timesWorn ?? 0) - 1),
       },
     }, { onSuccess: invalidate });
@@ -287,7 +292,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         <div className="px-4 pt-4 pb-2 flex flex-col gap-3 border-b-2 border-black/10">
 
           {/* "Making This Today" / "Logged ✓ · Undo" button */}
-          {!isLoggedToday ? (
+          {!loggedToday ? (
             <button
               onClick={handleLogToday}
               disabled={updateItem.isPending}
