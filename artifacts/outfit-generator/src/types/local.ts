@@ -25,6 +25,8 @@ export interface ClothingItem {
   notes: string | null;
   isFavorite: boolean;
   timesWorn: number;
+  /** "YYYY-MM-DD" local date string of the last time this recipe was made, null if never. */
+  lastMadeDate: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -2,17 +2,39 @@
  * ItemDetailsSheet — full-screen overlay showing an item's details.
  * Every field is optional and editable. A "Save" button appears only when
  * the form is dirty. Delete is always available.
+ *
+ * Recipes + Meal Plans items get an extra cooking-tracker section:
+ *  • "Making This Today" button directly below the photo
+ *  • Editable "Times Made" field (saves on blur)
+ *  • "Last made: M/D/YY" label — hidden if never logged
  */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Trash2, Save, ChevronDown } from "lucide-react";
+import { X, Heart, Trash2, Save, ChevronDown, Check, RotateCcw } from "lucide-react";
 import type { ClothingItem, ClothingCategory, ClothingItemUpdateCategory } from "@/types/local";
 import { useUpdateClothingItem, useDeleteClothingItem, getListClothingQueryKey } from "@/hooks/useLocalWardrobe";
 import { getListOutfitsQueryKey } from "@/hooks/useLocalOutfits";
 import { useQueryClient } from "@tanstack/react-query";
 import { getImageUrl } from "@/lib/utils";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Date helpers ──────────────────────────────────────────────────────────────
+
+/** Returns today's date as "YYYY-MM-DD" in the user's local timezone. */
+function todayLocal(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/** Formats "YYYY-MM-DD" → "M/D/YY" e.g. "2026-01-05" → "1/5/26". */
+function formatLastMade(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return `Last made: ${m}/${d}/${String(y).slice(2)}`;
+}
+
+// ── Static options ─────────────────────────────────────────────────────────────
 
 const CATEGORY_OPTIONS: { value: ClothingCategory; label: string }[] = [
   { value: "documents",          label: "Documents" },
@@ -20,6 +42,8 @@ const CATEGORY_OPTIONS: { value: ClothingCategory; label: string }[] = [
   { value: "personal",           label: "Personal" },
   { value: "recipes-meal-plans", label: "Recipes + Meal Plans" },
 ];
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
 
 function Field({
   label, value, onChange, placeholder, type = "text",
@@ -43,7 +67,7 @@ function Field({
   );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Main component ─────────────────────────────────────────────────────────────
 
 interface ItemDetailsSheetProps {
   item: ClothingItem | null;
@@ -83,19 +107,40 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
 }
 
 export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
-  const [form, setForm]                         = useState<FormState | null>(null);
+  const [form, setForm]                           = useState<FormState | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // ── Cooking tracker state (recipes-meal-plans only) ──────────────────────────
+  // timesMadeInput: local string for the editable input, saved on blur
+  const [timesMadeInput, setTimesMadeInput] = useState("");
+  // prevLastMadeDate: the lastMadeDate before the user tapped "Making This Today"
+  // in this session. null means either never logged, or logged before app opened.
+  const [prevLastMadeDate, setPrevLastMadeDate] = useState<string | null>(null);
 
   const updateItem  = useUpdateClothingItem();
   const deleteItem  = useDeleteClothingItem();
   const queryClient = useQueryClient();
 
+  // Reset form whenever we open a different item
   useEffect(() => {
-    if (item) setForm(toForm(item));
+    if (item) {
+      setForm(toForm(item));
+      setTimesMadeInput(String(item.timesWorn ?? 0));
+      setPrevLastMadeDate(null);
+    }
     setShowDeleteConfirm(false);
   }, [item?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Keep timesMadeInput in sync after external mutations (e.g. button tap)
+  useEffect(() => {
+    if (item) setTimesMadeInput(String(item.timesWorn ?? 0));
+  }, [item?.timesWorn]); // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!item || !form) return null;
+
+  const today        = todayLocal(); // re-evaluated each render → auto-resets at midnight
+  const isRecipe     = item.category === "recipes-meal-plans";
+  const isLoggedToday = item.lastMadeDate === today;
 
   const dirty = isDirty(form, item);
   const patch = (key: keyof FormState) => (value: string | boolean) =>
@@ -106,6 +151,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     queryClient.invalidateQueries({ queryKey: getListOutfitsQueryKey() });
   };
 
+  // ── Form save ────────────────────────────────────────────────────────────────
   const handleSave = () => {
     updateItem.mutate(
       {
@@ -123,6 +169,39 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     );
   };
 
+  // ── Cooking tracker actions ──────────────────────────────────────────────────
+  const handleLogToday = () => {
+    setPrevLastMadeDate(item.lastMadeDate); // capture for undo
+    updateItem.mutate({
+      id: item.id,
+      data: {
+        lastMadeDate: today,
+        timesWorn: (item.timesWorn ?? 0) + 1,
+      },
+    }, { onSuccess: invalidate });
+  };
+
+  const handleUndo = () => {
+    updateItem.mutate({
+      id: item.id,
+      data: {
+        lastMadeDate: prevLastMadeDate,            // restore (may be null)
+        timesWorn: Math.max(0, (item.timesWorn ?? 0) - 1),
+      },
+    }, { onSuccess: invalidate });
+    setPrevLastMadeDate(null);
+  };
+
+  const handleTimesMadeBlur = () => {
+    const parsed = parseInt(timesMadeInput, 10);
+    const value  = Number.isFinite(parsed) ? Math.max(0, parsed) : (item.timesWorn ?? 0);
+    if (value !== item.timesWorn) {
+      updateItem.mutate({ id: item.id, data: { timesWorn: value } }, { onSuccess: invalidate });
+    }
+    setTimesMadeInput(String(value)); // normalise display
+  };
+
+  // ── Delete ───────────────────────────────────────────────────────────────────
   const handleDelete = () => {
     deleteItem.mutate(
       { id: item.id },
@@ -136,6 +215,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
     );
   };
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <motion.div
       initial={{ opacity: 0, y: "100%" }}
@@ -144,10 +224,12 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
       transition={{ type: "spring", damping: 28, stiffness: 240 }}
       className="fixed inset-0 z-[65] flex flex-col max-w-md mx-auto bg-[#f9f4ee] overflow-y-auto"
     >
-      {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center justify-between px-4 pb-3
-                      bg-white border-b-2 border-black flex-shrink-0"
-        style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
+      {/* ── Header ────────────────────────────────────────────────────────────── */}
+      <div
+        className="sticky top-0 z-10 flex items-center justify-between px-4 pb-3
+                   bg-white border-b-2 border-black flex-shrink-0"
+        style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}
+      >
         <h2 className="font-display font-bold text-xl uppercase tracking-tight">Item Details</h2>
         <div className="flex items-center gap-2">
           {/* Favourite toggle */}
@@ -160,9 +242,11 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
                 { onSuccess: invalidate },
               );
             }}
-            className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center transition-all
-                       shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-            style={form.isFavorite ? { background: "linear-gradient(to bottom, #8a8a8a, #666666)" } : { background: "white" }}
+            className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center
+                       transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+            style={form.isFavorite
+              ? { background: "linear-gradient(to bottom, #8a8a8a, #666666)" }
+              : { background: "white" }}
           >
             <Heart
               className="w-4 h-4"
@@ -170,7 +254,6 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               stroke={form.isFavorite ? "white" : "currentColor"}
             />
           </button>
-          {/* Close */}
           <button
             onClick={onClose}
             className="w-9 h-9 border-2 border-black rounded-full flex items-center justify-center
@@ -182,7 +265,7 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         </div>
       </div>
 
-      {/* Photo */}
+      {/* ── Photo ─────────────────────────────────────────────────────────────── */}
       {item.imageObjectPath && (
         <div
           className="w-full h-52 flex-shrink-0 border-b-2 border-black"
@@ -199,7 +282,78 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         </div>
       )}
 
-      {/* Form */}
+      {/* ── Cooking tracker (recipes-meal-plans only) ─────────────────────────── */}
+      {isRecipe && (
+        <div className="px-4 pt-4 pb-2 flex flex-col gap-3 border-b-2 border-black/10">
+
+          {/* "Making This Today" / "Logged ✓ · Undo" button */}
+          {!isLoggedToday ? (
+            <button
+              onClick={handleLogToday}
+              disabled={updateItem.isPending}
+              className="w-full py-3 rounded-xl border-2 border-black font-black uppercase
+                         text-sm tracking-wide text-white flex items-center justify-center gap-2
+                         shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]
+                         active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                         transition-all disabled:opacity-50"
+              style={{ background: "linear-gradient(to bottom, #8a8a8a, #666666)" }}
+            >
+              Making This Today
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              {/* Logged state — full width green-ish pill */}
+              <div
+                className="flex-1 py-3 rounded-xl border-2 border-black font-bold uppercase
+                           text-sm tracking-wide flex items-center justify-center gap-2"
+                style={{ background: "#e8f5e9", color: "#2e7d32", borderColor: "#2e7d32" }}
+              >
+                <Check className="w-4 h-4" strokeWidth={2.5} />
+                Logged ✓
+              </div>
+              {/* Undo button */}
+              <button
+                onClick={handleUndo}
+                disabled={updateItem.isPending}
+                className="px-4 py-3 rounded-xl border-2 border-black bg-white font-bold uppercase
+                           text-xs tracking-wide flex items-center justify-center gap-1.5
+                           shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                           active:translate-x-0.5 active:translate-y-0.5 active:shadow-none
+                           transition-all disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Undo
+              </button>
+            </div>
+          )}
+
+          {/* Times Made + Last Made */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-black/40 whitespace-nowrap">
+                Times Made
+              </label>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={timesMadeInput}
+                onChange={(e) => setTimesMadeInput(e.target.value)}
+                onBlur={handleTimesMadeBlur}
+                className="w-16 border-2 border-black rounded-lg px-2 py-1 text-sm font-bold
+                           text-center bg-white focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            {item.lastMadeDate && (
+              <span className="text-xs text-black/40 font-medium">
+                {formatLastMade(item.lastMadeDate)}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Form fields ───────────────────────────────────────────────────────── */}
       <div className="flex-1 px-4 py-5 flex flex-col gap-4">
         <Field
           label="Item Name"
@@ -216,7 +370,8 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
               value={form.category}
               onChange={(e) => patch("category")(e.target.value)}
               className="w-full appearance-none border-2 border-black rounded-lg px-3 py-2 pr-8
-                         text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer"
+                         text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary
+                         cursor-pointer"
             >
               {CATEGORY_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -255,9 +410,11 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="sticky bottom-0 px-4 py-4 bg-white border-t-2 border-black flex-shrink-0 flex flex-col gap-2"
-        style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
+      {/* ── Footer ────────────────────────────────────────────────────────────── */}
+      <div
+        className="sticky bottom-0 px-4 py-4 bg-white border-t-2 border-black flex-shrink-0 flex flex-col gap-2"
+        style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
+      >
         <AnimatePresence>
           {dirty && (
             <motion.button
