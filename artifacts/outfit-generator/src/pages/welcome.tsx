@@ -105,13 +105,12 @@ export default function WelcomePage({ onEnter }: Props) {
 
   return (
     <motion.div
+      initial={{ opacity: 0 }}
       animate={{ opacity: phase === "exiting" ? 0 : 1 }}
-      transition={{ duration: EXIT_MS / 1000, ease: "easeIn" }}
-      onClick={phase === "splash" ? handleTap : undefined}
+      transition={{ duration: phase === "exiting" ? EXIT_MS / 1000 : 0.5, ease: "easeIn" }}
       style={{
         position: "fixed", inset: 0, zIndex: 200,
         background: "#1a1a1a",
-        cursor: phase === "splash" ? "pointer" : "default",
         overflow: "hidden",
       }}
     >
@@ -271,108 +270,83 @@ export default function WelcomePage({ onEnter }: Props) {
         ))}
       </svg>
 
-      {/* ── Brand text overlay (on top of SVG, inside top plate area) ── */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0,
-          height: TOP_H,  // matches SVG TOP_H in px at 1:1 scale; scales with SVG
-          // Use percentages so it tracks the scaled SVG on all screen sizes
-          // TOP_H/VBH = 130/844 ≈ 15.4%
-          height: `${(TOP_H / VBH) * 100}%`,
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          paddingTop: "env(safe-area-inset-top)",
-          zIndex: 3, pointerEvents: "none",
-        }}
-      >
+      {/* ── Bottom branding + action button + links ── */}
+      <div style={{
+        position: "fixed",
+        bottom: 0, left: 0, right: 0,
+        paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)",
+        paddingLeft: 28, paddingRight: 28,
+        display: "flex", flexDirection: "column",
+        alignItems: "center", gap: 0,
+        zIndex: 10,
+        background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.42) 55%, transparent 100%)",
+        paddingTop: 40,
+        pointerEvents: phase === "splash" ? "auto" : "none",
+      }}>
+        {/* Branding */}
+        <div style={{
+          fontSize: 11, fontWeight: 800,
+          letterSpacing: "0.28em", textTransform: "uppercase",
+          color: "rgba(220,225,240,0.72)",
+          textShadow: "0 1px 6px rgba(0,0,0,0.7)",
+          marginBottom: 2,
+        }}>
+          Welcome to
+        </div>
         <div style={{
           fontFamily: "'Great Vibes', cursive",
           fontWeight: 400,
-          fontSize: "clamp(30px, 8.5vw, 46px)",
+          fontSize: "clamp(32px, 9vw, 46px)",
           color: "#f0f0f0",
-          textShadow: "0 2px 12px rgba(0,0,0,0.8), 0 0 30px rgba(200,200,200,0.2)",
-          lineHeight: 1.15,
+          textShadow: "0 2px 12px rgba(0,0,0,0.9), 0 0 28px rgba(200,200,200,0.15)",
+          lineHeight: 1.2,
           textAlign: "center",
+          marginBottom: 20,
         }}>
           My Digital<br />Filing Cabinet
         </div>
-        <div style={{
-          fontSize: 13, fontWeight: 800,
-          letterSpacing: "0.24em", textTransform: "uppercase",
-          color: "rgba(220,220,235,0.92)",
-          textShadow: "0 1px 8px rgba(0,0,0,0.6)",
-          marginTop: 0,
-          paddingLeft: 24, paddingRight: 24,
-          textAlign: "center",
-        }}>
-          your collection, secured
-        </div>
-      </div>
 
-      {/* ── "Tap to open" hint — sits on the middle drawer face ── */}
-      <AnimatePresence>
-        {phase === "splash" && (
-          <motion.div
-            key="tap-hint"
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: [0, 1] }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ delay: 1.0, duration: 0.5 }}
-            style={{
-              position: "absolute",
-              top: `${((OPEN_DY + DH * 0.72) / VBH) * 100}%`,
-              left: 0, right: 0,
-              textAlign: "center",
-              zIndex: 3, pointerEvents: "none",
-            }}
+        {/* Primary action button */}
+        <button
+          onClick={handleTap}
+          disabled={phase !== "splash"}
+          style={{
+            width: "100%",
+            padding: "14px 0",
+            background: "rgba(255,255,255,0.96)",
+            border: "2px solid #000",
+            borderRadius: 14,
+            boxShadow: "3px 3px 0px 0px rgba(0,0,0,0.85)",
+            fontSize: 14, fontWeight: 900,
+            letterSpacing: "0.2em", textTransform: "uppercase",
+            color: "#1a1a1a",
+            cursor: "pointer",
+            marginBottom: 18,
+            opacity: phase !== "splash" ? 0.4 : 1,
+            transition: "opacity 0.2s, box-shadow 0.1s, transform 0.1s",
+          }}
+        >
+          Open My Vault
+        </button>
+
+        {/* Links */}
+        <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
+          <a
+            href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.25)", textDecoration: "none", letterSpacing: "0.02em" }}
           >
-            <motion.span
-              animate={{
-                opacity: [0.6, 1, 0.6],
-                textShadow: [
-                  "0 0 6px rgba(220,230,255,0.3), 0 0 14px rgba(200,215,255,0.15)",
-                  "0 0 14px rgba(220,230,255,0.9), 0 0 28px rgba(200,215,255,0.55), 0 0 44px rgba(180,200,255,0.25)",
-                  "0 0 6px rgba(220,230,255,0.3), 0 0 14px rgba(200,215,255,0.15)",
-                ],
-              }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-              style={{
-                display: "inline-block",
-                fontSize: 13, fontWeight: 800, letterSpacing: "0.26em",
-                textTransform: "uppercase",
-                color: "#e8ecff",
-              }}
-            >
-              tap to open
-            </motion.span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Footer links ── */}
-      <div style={{
-        position: "fixed",
-        bottom: "calc(env(safe-area-inset-bottom) + 12px)",
-        left: 0, right: 0,
-        display: "flex", flexDirection: "column",
-        alignItems: "center", gap: 4,
-        zIndex: 10,
-      }}>
-        <a
-          href="https://classy-alpaca-441.notion.site/Privacy-Policy-39682db6065380b19dedcb108d4a0ef4"
-          target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.18)", textDecoration: "none", letterSpacing: "0.02em" }}
-        >
-          Privacy Policy
-        </a>
-        <a
-          href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
-          target="_blank" rel="noopener noreferrer"
-          style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.18)", textDecoration: "none", letterSpacing: "0.02em" }}
-        >
-          Support
-        </a>
+            Privacy Policy
+          </a>
+          <span style={{ color: "rgba(255,255,255,0.12)", fontSize: 10 }}>•</span>
+          <a
+            href="https://app.notion.com/p/My-Digital-Closet-Support-39782db60653802a9088dcbae84c0527?source=copy_link"
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: 11, fontWeight: 500, color: "rgba(255,255,255,0.25)", textDecoration: "none", letterSpacing: "0.02em" }}
+          >
+            Support
+          </a>
+        </div>
       </div>
     </motion.div>
   );

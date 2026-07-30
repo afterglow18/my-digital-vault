@@ -6,9 +6,10 @@ import SavedPage from './pages/saved';
 import FavoritesPage from './pages/favorites';
 import BackupPage from './pages/backup';
 import WelcomePage from './pages/welcome';
+import HeroSplash from './pages/hero-splash';
 import { LockedScreen } from './components/LockedScreen';
 import { queryClient } from '@/lib/queryClient';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { initRevenueCat, setupCustomerInfoListener } from '@/lib/revenuecat';
 import { syncFromRevenueCat, setGlobalTier } from '@/hooks/useEntitlements';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
@@ -54,9 +55,27 @@ function Router() {
   );
 }
 
+type SplashPhase = "hero" | "welcome" | "entered";
+
 function AppShell() {
   const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
-  const [entered, setEntered] = useState<boolean>(() => isPreview);
+
+  // "hero" → "welcome" → "entered"
+  // sessionStorage keeps the splash gone for the rest of the session (background/foreground)
+  // but shows it again on a full cold launch (fresh webview = cleared sessionStorage).
+  const [splashPhase, setSplashPhase] = useState<SplashPhase>(() => {
+    if (isPreview) return "entered";
+    try {
+      if (sessionStorage.getItem("vault_splash_shown") === "1") return "entered";
+    } catch {}
+    return "hero";
+  });
+
+  const handleHeroDone = useCallback(() => setSplashPhase("welcome"), []);
+  const handleEnter = useCallback(() => {
+    try { sessionStorage.setItem("vault_splash_shown", "1"); } catch {}
+    setSplashPhase("entered");
+  }, []);
   const { enabled, isLocked, authenticate, enableLock, disableLock } = useBiometricLock();
 
   // Re-check entitlement every time the app comes back to the foreground.
@@ -79,7 +98,16 @@ function AppShell() {
     <BiometricLockContext.Provider value={{ enabled, enableLock, disableLock }}>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <Router />
-        {!entered && <WelcomePage onEnter={() => setEntered(true)} />}
+
+        {/* Splash sequence — hero image → animated cabinet → app */}
+        <AnimatePresence mode="wait">
+          {splashPhase === "hero" && (
+            <HeroSplash key="hero" onContinue={handleHeroDone} />
+          )}
+          {splashPhase === "welcome" && (
+            <WelcomePage key="welcome" onEnter={handleEnter} />
+          )}
+        </AnimatePresence>
       </WouterRouter>
 
       {/* Biometric lock gate — sits above everything including the welcome splash */}
