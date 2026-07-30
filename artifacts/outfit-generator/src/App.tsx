@@ -100,7 +100,9 @@ function AppShell() {
         <Router />
 
         {/* Splash sequence — hero image → animated cabinet → app */}
-        <AnimatePresence mode="wait">
+        {/* No mode="wait" — sync crossfade prevents the app from showing
+            through the gap between hero exit and cabinet enter. */}
+        <AnimatePresence>
           {splashPhase === "hero" && (
             <HeroSplash key="hero" onContinue={handleHeroDone} />
           )}
