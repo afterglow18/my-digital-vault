@@ -100,8 +100,12 @@ function AppShell() {
         <Router />
 
         {/* Splash sequence — hero image → animated cabinet → app */}
-        {/* No mode="wait" — sync crossfade prevents the app from showing
-            through the gap between hero exit and cabinet enter. */}
+        {/* Solid backdrop — sits above the app but below both splash screens.
+            Prevents the app from ever showing through during transitions. */}
+        {splashPhase !== "entered" && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 190, background: "#1a1a1a" }} />
+        )}
+
         <AnimatePresence>
           {splashPhase === "hero" && (
             <HeroSplash key="hero" onContinue={handleHeroDone} />
