@@ -174,25 +174,23 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
 
   // ── Cooking tracker actions ──────────────────────────────────────────────────
   const handleLogToday = () => {
-    setPrevLastMadeDate(item.lastMadeDate); // capture for undo
-    setLoggedToday(true);                  // optimistic — flip immediately
+    const nextCount = (item.timesWorn ?? 0) + 1;
+    setPrevLastMadeDate(item.lastMadeDate);
+    setLoggedToday(true);                  // optimistic — flip button immediately
+    setTimesMadeInput(String(nextCount));  // optimistic — show new count immediately
     updateItem.mutate({
       id: item.id,
-      data: {
-        lastMadeDate: today,
-        timesWorn: (item.timesWorn ?? 0) + 1,
-      },
+      data: { lastMadeDate: today, timesWorn: nextCount },
     }, { onSuccess: invalidate });
   };
 
   const handleUndo = () => {
-    setLoggedToday(false);                 // optimistic — flip immediately
+    const nextCount = Math.max(0, (item.timesWorn ?? 0) - 1);
+    setLoggedToday(false);                 // optimistic — flip button immediately
+    setTimesMadeInput(String(nextCount));  // optimistic — show restored count immediately
     updateItem.mutate({
       id: item.id,
-      data: {
-        lastMadeDate: prevLastMadeDate,    // restore (may be null)
-        timesWorn: Math.max(0, (item.timesWorn ?? 0) - 1),
-      },
+      data: { lastMadeDate: prevLastMadeDate, timesWorn: nextCount },
     }, { onSuccess: invalidate });
     setPrevLastMadeDate(null);
   };
