@@ -326,7 +326,7 @@ export default function WelcomePage({ onEnter }: Props) {
             transition: "opacity 0.2s, box-shadow 0.1s, transform 0.1s",
           }}
         >
-          Open My Vault
+          Open
         </button>
 
         {/* Links */}
