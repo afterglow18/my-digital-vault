@@ -174,10 +174,13 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
 
   // ── Cooking tracker actions ──────────────────────────────────────────────────
   const handleLogToday = () => {
-    const nextCount = (item.timesWorn ?? 0) + 1;
+    // Read from timesMadeInput (already optimistic) — never from item.timesWorn
+    // which may be stale if the previous refetch hasn't settled yet.
+    const current   = Math.max(0, parseInt(timesMadeInput, 10) || 0);
+    const nextCount = current + 1;
     setPrevLastMadeDate(item.lastMadeDate);
-    setLoggedToday(true);                  // optimistic — flip button immediately
-    setTimesMadeInput(String(nextCount));  // optimistic — show new count immediately
+    setLoggedToday(true);
+    setTimesMadeInput(String(nextCount));
     updateItem.mutate({
       id: item.id,
       data: { lastMadeDate: today, timesWorn: nextCount },
@@ -185,9 +188,10 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
   };
 
   const handleUndo = () => {
-    const nextCount = Math.max(0, (item.timesWorn ?? 0) - 1);
-    setLoggedToday(false);                 // optimistic — flip button immediately
-    setTimesMadeInput(String(nextCount));  // optimistic — show restored count immediately
+    const current   = Math.max(0, parseInt(timesMadeInput, 10) || 0);
+    const nextCount = Math.max(0, current - 1);
+    setLoggedToday(false);
+    setTimesMadeInput(String(nextCount));
     updateItem.mutate({
       id: item.id,
       data: { lastMadeDate: prevLastMadeDate, timesWorn: nextCount },
