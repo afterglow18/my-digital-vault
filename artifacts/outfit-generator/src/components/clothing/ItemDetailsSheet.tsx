@@ -10,12 +10,13 @@
  */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Trash2, Save, ChevronDown, Check, RotateCcw } from "lucide-react";
+import { X, Heart, Trash2, Save, ChevronDown, Check, RotateCcw, BookMarked } from "lucide-react";
 import type { ClothingItem, ClothingCategory, ClothingItemUpdateCategory } from "@/types/local";
 import { useUpdateClothingItem, useDeleteClothingItem, getListClothingQueryKey } from "@/hooks/useLocalWardrobe";
 import { getListOutfitsQueryKey } from "@/hooks/useLocalOutfits";
 import { useQueryClient } from "@tanstack/react-query";
 import { getImageUrl } from "@/lib/utils";
+import { AddToLookbookSheet } from "./AddToLookbookSheet";
 
 // ── Date helpers ──────────────────────────────────────────────────────────────
 
@@ -73,6 +74,8 @@ interface ItemDetailsSheetProps {
   item: ClothingItem | null;
   onClose: () => void;
   onDeleted?: () => void;
+  /** When true (search results / favorites), show "Add to Lookbook" button. */
+  showAddToLookbook?: boolean;
 }
 
 interface FormState {
@@ -106,9 +109,10 @@ function isDirty(form: FormState, item: ClothingItem): boolean {
   );
 }
 
-export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetProps) {
+export function ItemDetailsSheet({ item, onClose, onDeleted, showAddToLookbook = false }: ItemDetailsSheetProps) {
   const [form, setForm]                           = useState<FormState | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm]     = useState(false);
+  const [showLookbookPicker, setShowLookbookPicker]   = useState(false);
 
   // ── Cooking tracker state (recipes-meal-plans only) ──────────────────────────
   // timesMadeInput: local string for the editable input, saved on blur
@@ -438,6 +442,20 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           )}
         </AnimatePresence>
 
+        {/* Add to Lookbook — shown from search results and favorites */}
+        {showAddToLookbook && (
+          <button
+            onClick={() => setShowLookbookPicker(true)}
+            className="w-full py-3 rounded-xl flex items-center justify-center gap-2 text-sm
+                       font-bold uppercase border-2 border-black bg-white
+                       shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                       active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
+          >
+            <BookMarked className="w-4 h-4" />
+            Add to Lookbook
+          </button>
+        )}
+
         {!showDeleteConfirm ? (
           <button
             onClick={() => setShowDeleteConfirm(true)}
@@ -471,6 +489,17 @@ export function ItemDetailsSheet({ item, onClose, onDeleted }: ItemDetailsSheetP
           </div>
         )}
       </div>
+
+      {/* Add to Lookbook picker sheet */}
+      <AnimatePresence>
+        {showLookbookPicker && item && (
+          <AddToLookbookSheet
+            key="lookbook-picker"
+            item={item}
+            onClose={() => setShowLookbookPicker(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

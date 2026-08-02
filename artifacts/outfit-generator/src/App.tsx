@@ -10,6 +10,7 @@ import HeroSplash from './pages/hero-splash';
 import { LockedScreen } from './components/LockedScreen';
 import { queryClient } from '@/lib/queryClient';
 import { useState, useEffect, useCallback } from 'react';
+import { startVisionIndexer } from '@/lib/visionIndexer';
 import { initRevenueCat, setupCustomerInfoListener } from '@/lib/revenuecat';
 import { syncFromRevenueCat, setGlobalTier } from '@/hooks/useEntitlements';
 import { useBiometricLock } from '@/hooks/useBiometricLock';
@@ -78,6 +79,19 @@ function AppShell() {
   }, []);
   const { enabled, isLocked, authenticate, enableLock, disableLock } = useBiometricLock();
 
+  // ── Vision indexer toast ─────────────────────────────────────────────────────
+  const [visionToast, setVisionToast] = useState(false);
+
+  useEffect(() => {
+    startVisionIndexer();
+    const handler = (e: Event) => {
+      const { active } = (e as CustomEvent<{ active: boolean }>).detail;
+      setVisionToast(active);
+    };
+    window.addEventListener('vault:vision-indexing', handler);
+    return () => window.removeEventListener('vault:vision-indexing', handler);
+  }, []);
+
   // Re-check entitlement every time the app comes back to the foreground.
   // visibilitychange fires on both web (tab focus) and native Capacitor
   // (app resume), so this works in both environments without requiring
@@ -120,6 +134,32 @@ function AppShell() {
       <AnimatePresence>
         {isLocked && (
           <LockedScreen key="locked" onAuthenticate={authenticate} />
+        )}
+      </AnimatePresence>
+
+      {/* Vision indexing toast */}
+      <AnimatePresence>
+        {visionToast && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "calc(env(safe-area-inset-bottom) + 72px)",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 9999,
+              background: "rgba(30,30,30,0.92)",
+              color: "#fff",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+              padding: "8px 16px",
+              borderRadius: 20,
+              whiteSpace: "nowrap",
+              pointerEvents: "none",
+            }}
+          >
+            Preparing photo search…
+          </div>
         )}
       </AnimatePresence>
     </BiometricLockContext.Provider>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import {
   useListOutfits,
   useDeleteOutfit,
@@ -7,8 +7,10 @@ import {
   useRemoveItemFromOutfit,
   getListOutfitsQueryKey,
 } from "@/hooks/useLocalOutfits";
+import { useListClothing } from "@/hooks/useLocalWardrobe";
 import type { ClothingItem } from "@/types/local";
-import { Trash2, Bookmark, Plus, Pencil, Check, X } from "lucide-react";
+import { Trash2, Bookmark, Plus, Pencil, Check, X, Search } from "lucide-react";
+import { search } from "@/lib/search";
 import { motion, AnimatePresence } from "framer-motion";
 import { getImageUrl } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -61,6 +63,7 @@ function ItemPhoto({
 
 export default function SavedPage() {
   const { data: outfits, isLoading } = useListOutfits();
+  const { data: allItems } = useListClothing();
   const deleteOutfit = useDeleteOutfit();
   const renameOutfit = useRenameOutfit();
   const removeItemFromOutfit = useRemoveItemFromOutfit();
@@ -71,12 +74,24 @@ export default function SavedPage() {
   const [replacingSlot, setReplacingSlot] = useState<{ outfitId: string; category: SlotKey } | null>(null);
   const [addingExtra, setAddingExtra]     = useState<string | null>(null);
   const [detailsItem, setDetailsItem] = useState<ClothingItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
   const [editingNotesId, setEditingNotesId] = useState<string | null>(null);
   const [notesValue, setNotesValue] = useState("");
   const notesInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // ── Search ────────────────────────────────────────────────────────────────────
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return null;
+    return search(searchQuery, allItems ?? [], outfits ?? []);
+  }, [searchQuery, allItems, outfits]);
+
+  useEffect(() => {
+    if (searchQuery) window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [searchQuery]);
 
   useEffect(() => {
     if (renamingId !== null) renameInputRef.current?.focus();
@@ -157,9 +172,9 @@ export default function SavedPage() {
 
   return (
     <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
-      <header className="mb-6">
+      <header className="mb-4">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
           {isFree && outfitCount > 0 && (
             <button
@@ -174,6 +189,30 @@ export default function SavedPage() {
                           }`}
             >
               {outfitCount}/{FREE_OUTFIT_LIMIT} saved
+            </button>
+          )}
+        </div>
+
+        {/* Search bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/35 pointer-events-none" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search…"
+            className="w-full border-2 border-black rounded-full pl-9 pr-9 py-2.5 text-sm font-medium
+                       bg-white focus:outline-none focus:ring-2 focus:ring-primary
+                       placeholder:text-black/30 placeholder:font-normal"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => { setSearchQuery(""); searchInputRef.current?.focus(); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center
+                         rounded-full bg-black/10 hover:bg-black/20 transition-colors"
+            >
+              <X className="w-3 h-3 text-black/60" />
             </button>
           )}
         </div>
@@ -204,7 +243,94 @@ export default function SavedPage() {
         </motion.div>
       )}
 
-      {isLoading ? (
+      {/* ── Search results ─────────────────────────────────────────────────── */}
+      {searchResults && (
+        <div className="flex flex-col gap-4 mb-4">
+          {searchResults.items.length === 0 && searchResults.outfits.length === 0 ? (
+            <div className="text-center py-10 text-sm text-black/40 font-medium">
+              No results for "{searchQuery}"
+            </div>
+          ) : (
+            <>
+              {/* Items */}
+              {searchResults.items.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-2">Items</p>
+                  <div className="flex flex-col gap-1">
+                    {searchResults.items.map(({ item }) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setDetailsItem(item)}
+                        className="flex items-center gap-3 bg-white border-2 border-black rounded-xl px-3 py-2
+                                   shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                                   active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-left"
+                      >
+                        <div
+                          className="w-12 h-12 border border-black/20 rounded-lg overflow-hidden flex-shrink-0"
+                          style={{ background: "#f2f2f2" }}
+                        >
+                          {item.imageObjectPath ? (
+                            <img src={getImageUrl(item.imageObjectPath)!} alt={item.name} className="w-full h-full object-contain" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-[10px] text-black/25">—</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm truncate">{item.name || "Untitled"}</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wide text-black/40 truncate">
+                            {SLOT_LABELS[item.category as SlotKey] ?? item.category}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Groups */}
+              {searchResults.outfits.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 mb-2">Groups</p>
+                  <div className="flex flex-col gap-1">
+                    {searchResults.outfits.map(({ outfit }) => (
+                      <button
+                        key={outfit.id}
+                        onClick={() => setSearchQuery("")}
+                        className="flex items-center gap-3 bg-white border-2 border-black rounded-xl px-3 py-2
+                                   shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]
+                                   active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all text-left"
+                      >
+                        <div className="flex gap-1 flex-shrink-0">
+                          {Array.from({ length: 3 }).map((_, i) => {
+                            const it = (outfit.items ?? [])[i];
+                            return (
+                              <div key={i} className="w-10 h-10 border border-black/15 rounded overflow-hidden" style={{ background: "#f2f2f2" }}>
+                                {it?.imageObjectPath ? (
+                                  <img src={getImageUrl(it.imageObjectPath)!} alt={it.name} className="w-full h-full object-contain" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="text-[8px] text-black/20">—</span>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <p className="font-bold text-sm truncate flex-1">{outfit.name}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── Normal content (hidden while searching) ────────────────────────── */}
+      {!searchResults && isLoading ? (
         <div className="flex flex-col gap-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="h-52 bg-muted animate-pulse border-2 border-black rounded-xl" />
@@ -398,7 +524,7 @@ export default function SavedPage() {
             );
           })}
         </div>
-      ) : (
+      ) : !searchResults ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl mt-8">
           <div className="w-14 h-14 bg-accent rounded-full flex items-center justify-center border-2 border-black mb-4">
             <Bookmark className="w-7 h-7" />
@@ -408,7 +534,7 @@ export default function SavedPage() {
             Head to your Filing Cabinet and save entries here.
           </p>
         </div>
-      )}
+      ) : null}
 
       {/* Upgrade sheet */}
       <AnimatePresence>
@@ -449,6 +575,7 @@ export default function SavedPage() {
             key={detailsItem.id}
             item={detailsItem}
             onClose={() => setDetailsItem(null)}
+            showAddToLookbook
           />
         )}
       </AnimatePresence>

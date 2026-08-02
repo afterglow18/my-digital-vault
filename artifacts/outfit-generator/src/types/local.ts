@@ -27,6 +27,17 @@ export interface ClothingItem {
   timesWorn: number;
   /** "YYYY-MM-DD" local date string of the last time this recipe was made, null if never. */
   lastMadeDate: string | null;
+  /** Color / object labels extracted from the photo (web canvas or iOS Vision). */
+  visionLabels: string[];
+  /** Text detected inside the photo (iOS Vision OCR). */
+  visionText: string[];
+  /**
+   * 0 = unanalyzed
+   * 1 = iOS Vision analyzed
+   * 4 = web canvas analyzed (current algorithm, ≥10% threshold)
+   * 5 = web analyzed but no labels found (skip retry)
+   */
+  visionVersion: number;
   createdAt: string;
   updatedAt: string;
 }
