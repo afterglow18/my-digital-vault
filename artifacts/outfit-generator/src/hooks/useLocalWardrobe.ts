@@ -64,8 +64,13 @@ export function useCreateClothingItem() {
   const qc = useQueryClient();
   return useMutation<ClothingItem, Error, { data: CreateClothingData }>({
     mutationFn: ({ data }) => dbCreateClothing(data),
-    onSuccess: () => {
+    onSuccess: (item) => {
       qc.invalidateQueries({ queryKey: ['clothing'] });
+      // Queue new photo for immediate vision indexing (import lazily to avoid
+      // circular deps and so it only loads after the DB write succeeds).
+      import('@/lib/visionIndexer').then(({ queueItemForIndexing }) => {
+        queueItemForIndexing(item);
+      });
     },
   });
 }
