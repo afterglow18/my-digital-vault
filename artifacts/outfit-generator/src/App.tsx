@@ -137,9 +137,9 @@ function AppShell() {
         )}
       </AnimatePresence>
 
-      {/* Vision indexing toast */}
+      {/* Vision indexing toast — only visible after splash */}
       <AnimatePresence>
-        {visionToast && (
+        {visionToast && splashPhase === "entered" && (
           <div
             style={{
               position: "fixed",
