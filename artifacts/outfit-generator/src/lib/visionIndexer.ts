@@ -48,11 +48,16 @@ async function analyzeItem(item: ClothingItem): Promise<void> {
   const isNative = Capacitor.isNativePlatform();
 
   if (isNative) {
-    const { labels, text } = await analyzeImageNative(item.imageObjectPath);
+    // Run Apple Vision classification + canvas color extraction in parallel so
+    // iOS items get both object labels ("shoe", "high heel") AND color names.
+    const [{ labels: objectLabels, text }, colorLabels] = await Promise.all([
+      analyzeImageNative(item.imageObjectPath),
+      extractColors(item.imageObjectPath),
+    ]);
     await dbUpdateClothing(item.id, {
-      visionLabels: labels,
+      visionLabels: [...new Set([...colorLabels, ...objectLabels])],
       visionText:   text,
-      visionVersion: 1,
+      visionVersion: 2, // v2 = iOS Vision + canvas color extraction merged
     });
   } else {
     const labels = await extractColors(item.imageObjectPath);
@@ -103,9 +108,10 @@ async function runIndexer(items: ClothingItem[]) {
 export async function startVisionIndexer(): Promise<void> {
   try {
     const all = await dbListClothing();
-    // Re-run anything < version 4 (version 1 = old iOS run; still re-index on web)
+    // Process: v0 (never analyzed) and v1 (old iOS, color-only, no canvas merge).
+    // Skip: v2 (iOS + canvas merged), v4 (web canvas OK), v5 (web, no labels).
     const needsWork = all.filter(
-      (i) => (i.visionVersion ?? 0) < 4,
+      (i) => (i.visionVersion ?? 0) < 2,
     );
     runIndexer(needsWork); // fire-and-forget
   } catch {
