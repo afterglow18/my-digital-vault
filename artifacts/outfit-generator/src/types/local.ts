@@ -51,6 +51,27 @@ export interface SavedOutfit {
   createdAt: string;
 }
 
+export interface DinnerPlan {
+  id: string;
+  /** Local calendar date in YYYY-MM-DD format. */
+  date: string;
+  /** Optional saved recipe reference; null for custom dinners. */
+  recipeItemId: string | null;
+  /** Snapshot/custom name shown in the planner. */
+  recipeName: string;
+  /** Optional preparation notes or recipe details. */
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DinnerPlanInput = {
+  date: string;
+  recipeItemId?: string | null;
+  recipeName: string;
+  notes?: string | null;
+};
+
 export interface WardrobeStats {
   total: number;
   byCategory: Array<{ category: string; count: number }>;

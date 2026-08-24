@@ -2,7 +2,7 @@
  * Local IndexedDB database service — replaces the API server.
  * Works identically on iOS (via Capacitor's WKWebView) and web dev.
  *
- * Schema version 1: clothing_items, outfits, outfit_items.
+ * Schema version 2: clothing_items, outfits, outfit_items, dinner_plans.
  */
 
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
@@ -12,6 +12,8 @@ import type {
   CreateClothingData,
   UpdateClothingData,
   WardrobeStats,
+  DinnerPlan,
+  DinnerPlanInput,
 } from '@/types/local';
 
 // ── Schema ────────────────────────────────────────────────────────────────────
@@ -40,6 +42,11 @@ interface VanitySchema extends DBSchema {
     value: OutfitItemRow;
     indexes: { 'by-outfit': string };
   };
+  dinner_plans: {
+    key: string;
+    value: DinnerPlan;
+    indexes: { 'by-date': string; 'by-created': string };
+  };
 }
 
 // ── Singleton connection ───────────────────────────────────────────────────────
@@ -48,7 +55,7 @@ let _dbPromise: Promise<IDBPDatabase<VanitySchema>> | null = null;
 
 function getDB(): Promise<IDBPDatabase<VanitySchema>> {
   if (!_dbPromise) {
-    _dbPromise = openDB<VanitySchema>('vanity-db', 1, {
+    _dbPromise = openDB<VanitySchema>('vanity-db', 2, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('clothing')) {
           const s = db.createObjectStore('clothing', { keyPath: 'id' });
@@ -62,6 +69,11 @@ function getDB(): Promise<IDBPDatabase<VanitySchema>> {
         if (!db.objectStoreNames.contains('outfit_items')) {
           const s = db.createObjectStore('outfit_items', { keyPath: 'id' });
           s.createIndex('by-outfit', 'outfitId');
+        }
+        if (!db.objectStoreNames.contains('dinner_plans')) {
+          const s = db.createObjectStore('dinner_plans', { keyPath: 'id' });
+          s.createIndex('by-date', 'date', { unique: true });
+          s.createIndex('by-created', 'createdAt');
         }
       },
     });
@@ -284,45 +296,108 @@ export async function dbRemoveItemFromOutfit(
   }
 }
 
+// ── Dinner planner ────────────────────────────────────────────────────────────
+
+export async function dbListDinnerPlans(
+  startDate?: string,
+  endDate?: string,
+): Promise<DinnerPlan[]> {
+  const db = await getDB();
+  const plans = await db.getAll('dinner_plans');
+  return plans
+    .filter((plan) => (!startDate || plan.date >= startDate) && (!endDate || plan.date <= endDate))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function dbUpsertDinnerPlan(data: DinnerPlanInput): Promise<DinnerPlan> {
+  const db = await getDB();
+  const existing = await db.getFromIndex('dinner_plans', 'by-date', data.date);
+  const now = new Date().toISOString();
+  const plan: DinnerPlan = {
+    id: existing?.id ?? crypto.randomUUID(),
+    date: data.date,
+    recipeItemId: data.recipeItemId ?? null,
+    recipeName: data.recipeName.trim(),
+    notes: data.notes?.trim() || null,
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
+  };
+  await db.put('dinner_plans', plan);
+  return plan;
+}
+
+export async function dbDeleteDinnerPlan(id: string): Promise<void> {
+  const db = await getDB();
+  await db.delete('dinner_plans', id);
+}
+
 // ── Export / Import ───────────────────────────────────────────────────────────
 
 export interface ExportPayload {
-  version: 1;
+  version: 1 | 2;
   exportedAt: string;
   clothing: ClothingItem[];
   outfits: OutfitRow[];
   outfit_items: OutfitItemRow[];
+  dinnerPlans?: DinnerPlan[];
 }
 
 export async function dbExportAll(): Promise<ExportPayload> {
   const db = await getDB();
   return {
-    version: 1,
+    version: 2,
     exportedAt: new Date().toISOString(),
     clothing: await db.getAll('clothing'),
     outfits: await db.getAll('outfits'),
     outfit_items: await db.getAll('outfit_items'),
+    dinnerPlans: await db.getAll('dinner_plans'),
   };
 }
 
 export async function dbImportAll(payload: ExportPayload): Promise<void> {
   const db = await getDB();
 
-  // Clear existing data
-  const clearTx = db.transaction(['clothing', 'outfits', 'outfit_items'], 'readwrite');
-  await Promise.all([
-    clearTx.objectStore('clothing').clear(),
-    clearTx.objectStore('outfits').clear(),
-    clearTx.objectStore('outfit_items').clear(),
-  ]);
-  await clearTx.done;
+  if (
+    (payload.version !== 1 && payload.version !== 2) ||
+    !Array.isArray(payload.clothing) ||
+    !Array.isArray(payload.outfits) ||
+    !Array.isArray(payload.outfit_items) ||
+    (payload.dinnerPlans !== undefined && !Array.isArray(payload.dinnerPlans))
+  ) {
+    throw new Error('Invalid backup file format');
+  }
 
-  // Insert imported data
-  const importTx = db.transaction(['clothing', 'outfits', 'outfit_items'], 'readwrite');
+  const dinnerPlans = payload.dinnerPlans ?? [];
+  const seenDates = new Set<string>();
+  for (const plan of dinnerPlans) {
+    if (
+      !plan ||
+      typeof plan.id !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(plan.date) ||
+      typeof plan.recipeName !== 'string' ||
+      !plan.recipeName.trim() ||
+      seenDates.has(plan.date)
+    ) {
+      throw new Error('Invalid dinner plans in backup');
+    }
+    seenDates.add(plan.date);
+  }
+
+  // A single transaction ensures an invalid or corrupt import leaves the
+  // current filing cabinet untouched instead of clearing it first.
+  const tx = db.transaction(['clothing', 'outfits', 'outfit_items', 'dinner_plans'], 'readwrite');
   await Promise.all([
-    ...payload.clothing.map((item) => importTx.objectStore('clothing').put(item)),
-    ...payload.outfits.map((row) => importTx.objectStore('outfits').put(row)),
-    ...payload.outfit_items.map((oi) => importTx.objectStore('outfit_items').put(oi)),
+    tx.objectStore('clothing').clear(),
+    tx.objectStore('outfits').clear(),
+    tx.objectStore('outfit_items').clear(),
+    tx.objectStore('dinner_plans').clear(),
   ]);
-  await importTx.done;
+
+  await Promise.all([
+    ...payload.clothing.map((item) => tx.objectStore('clothing').put(item)),
+    ...payload.outfits.map((row) => tx.objectStore('outfits').put(row)),
+    ...payload.outfit_items.map((oi) => tx.objectStore('outfit_items').put(oi)),
+    ...dinnerPlans.map((plan) => tx.objectStore('dinner_plans').put(plan)),
+  ]);
+  await tx.done;
 }

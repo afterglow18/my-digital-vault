@@ -19,6 +19,12 @@ import { UpgradeSheet } from "@/components/paywall/UpgradeSheet";
 import { FREE_OUTFIT_LIMIT } from "@/types/local";
 import { WardrobePickerSheet } from "@/components/clothing/WardrobePickerSheet";
 import { ItemDetailsSheet } from "@/components/clothing/ItemDetailsSheet";
+import DinnerPlanner from "@/components/lookbook/DinnerPlanner";
+import {
+  useDeleteDinnerPlan,
+  useDinnerPlans,
+  useSaveDinnerPlan,
+} from "@/hooks/useDinnerPlans";
 
 const SLOT_ORDER = ["documents", "finances", "personal", "recipes-meal-plans"] as const;
 type SlotKey = (typeof SLOT_ORDER)[number];
@@ -64,16 +70,20 @@ function ItemPhoto({
 export default function SavedPage() {
   const { data: outfits, isLoading } = useListOutfits();
   const { data: allItems } = useListClothing();
+  const { data: dinnerPlans = [], isLoading: dinnerPlansLoading } = useDinnerPlans();
   const deleteOutfit = useDeleteOutfit();
   const renameOutfit = useRenameOutfit();
   const removeItemFromOutfit = useRemoveItemFromOutfit();
   const addItemToOutfit = useAddItemToOutfit();
+  const saveDinnerPlan = useSaveDinnerPlan();
+  const deleteDinnerPlan = useDeleteDinnerPlan();
   const queryClient = useQueryClient();
   const { tier } = useEntitlements();
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [replacingSlot, setReplacingSlot] = useState<{ outfitId: string; category: SlotKey } | null>(null);
   const [addingExtra, setAddingExtra]     = useState<string | null>(null);
   const [detailsItem, setDetailsItem] = useState<ClothingItem | null>(null);
+  const [viewMode, setViewMode] = useState<"list" | "plan">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -137,6 +147,11 @@ export default function SavedPage() {
   const isFree = tier === "free";
   const outfitCount = outfits?.length ?? 0;
   const atLimit = isFree && outfitCount >= FREE_OUTFIT_LIMIT;
+  const savedMeals = useMemo(
+    () => (allItems ?? []).filter((item) => item.category === "recipes-meal-plans"),
+    [allItems],
+  );
+  const dinnerError = saveDinnerPlan.error?.message ?? deleteDinnerPlan.error?.message ?? null;
 
   const handleDelete = (id: string) => {
     deleteOutfit.mutate(
@@ -193,8 +208,29 @@ export default function SavedPage() {
           )}
         </div>
 
+        <div
+          className="inline-flex mb-3 border-2 border-black rounded-lg bg-white p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+          role="group"
+          aria-label="Lookbook view"
+        >
+          {(["list", "plan"] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`min-h-9 px-4 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
+                viewMode === mode
+                  ? "bg-[#2C302E] text-white"
+                  : "text-black/45 hover:bg-black/5"
+              }`}
+              aria-pressed={viewMode === mode}
+            >
+              {mode === "list" ? "List" : "Plan"}
+            </button>
+          ))}
+        </div>
+
         {/* Search bar */}
-        <div className="relative">
+        {viewMode === "list" && <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black/35 pointer-events-none" />
           <input
             ref={searchInputRef}
@@ -215,9 +251,21 @@ export default function SavedPage() {
               <X className="w-3 h-3 text-black/60" />
             </button>
           )}
-        </div>
+        </div>}
       </header>
 
+      {viewMode === "plan" ? (
+        <DinnerPlanner
+          plans={dinnerPlans}
+          recipes={savedMeals}
+          isLoading={dinnerPlansLoading}
+          isSaving={saveDinnerPlan.isPending}
+          error={dinnerError}
+          onSavePlan={(data) => saveDinnerPlan.mutate({ data })}
+          onDeletePlan={(id) => deleteDinnerPlan.mutate({ id })}
+        />
+      ) : (
+        <>
       {atLimit && !isLoading && (
         <motion.div
           initial={{ opacity: 0, y: -8 }}
@@ -535,6 +583,8 @@ export default function SavedPage() {
           </p>
         </div>
       ) : null}
+        </>
+      )}
 
       {/* Upgrade sheet */}
       <AnimatePresence>
