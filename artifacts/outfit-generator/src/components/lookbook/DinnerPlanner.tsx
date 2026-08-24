@@ -441,6 +441,9 @@ export default function DinnerPlanner({
 
               const dateString = toDateString(date);
               const plan = plansByDate.get(dateString);
+              const recipePhoto = plan?.recipeItemId
+                ? recipes.find((recipe) => recipe.id === plan.recipeItemId)?.imageObjectPath
+                : null;
               const current = isToday(date);
               const past = date < today && !current;
 
@@ -461,9 +464,22 @@ export default function DinnerPlanner({
                       : "border-black/20 bg-white hover:bg-[#FFF9E6]"
                   }`}
                 >
-                  <span className="text-[11px] font-bold leading-none">{format(date, "d")}</span>
+                  {recipePhoto && (
+                    <img
+                      src={getImageUrl(recipePhoto) ?? undefined}
+                      alt=""
+                      className="absolute inset-0 h-full w-full rounded-[8px] object-cover opacity-70"
+                    />
+                  )}
+                  <span className={`relative z-10 rounded-sm px-0.5 text-[11px] font-bold leading-none ${
+                    recipePhoto ? "bg-white/80" : ""
+                  }`}>
+                    {format(date, "d")}
+                  </span>
                   {plan ? (
-                    <span className="line-clamp-2 w-full pr-0.5 text-[9px] font-bold uppercase leading-[1.05]">
+                    <span className={`relative z-10 line-clamp-2 w-full pr-0.5 text-[9px] font-bold uppercase leading-[1.05] ${
+                      recipePhoto ? "rounded-sm bg-white/80 px-0.5" : ""
+                    }`}>
                       {plan.recipeName}
                     </span>
                   ) : (
