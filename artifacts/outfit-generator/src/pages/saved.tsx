@@ -9,7 +9,7 @@ import {
 } from "@/hooks/useLocalOutfits";
 import { useListClothing } from "@/hooks/useLocalWardrobe";
 import type { ClothingItem } from "@/types/local";
-import { Trash2, Bookmark, Plus, Pencil, Check, X, Search } from "lucide-react";
+import { Trash2, Bookmark, Plus, Pencil, Check, X, Search, List, CalendarDays } from "lucide-react";
 import { search } from "@/lib/search";
 import { motion, AnimatePresence } from "framer-motion";
 import { getImageUrl } from "@/lib/utils";
@@ -186,47 +186,51 @@ export default function SavedPage() {
   };
 
   return (
-    <div className="min-h-full flex flex-col pt-8 px-4 pb-8 bg-secondary/10 relative">
+    <div className={`min-h-full flex flex-col pt-8 px-4 pb-8 relative ${viewMode === "plan" ? "bg-[#FFF4F6]" : "bg-secondary/10"}`}>
       <header className="mb-4">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between gap-2 mb-3">
           <p className="font-medium text-muted-foreground text-sm">Hall of fame.</p>
-          {isFree && outfitCount > 0 && (
-            <button
-              onClick={() => setShowUpgrade(true)}
-              className={`text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full
-                          border-2 transition-colors
-                          ${atLimit
-                            ? "bg-black text-white border-black"
-                            : outfitCount >= FREE_OUTFIT_LIMIT - 1
-                            ? "bg-primary border-black text-black"
-                            : "bg-white border-black/20 text-black/40 hover:border-black/40"
-                          }`}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div
+              className="inline-flex border-2 border-black rounded-full bg-white p-0.5"
+              role="group"
+              aria-label="Lookbook view"
             >
-              {outfitCount}/{FREE_OUTFIT_LIMIT} saved
-            </button>
-          )}
-        </div>
-
-        <div
-          className="inline-flex mb-3 border-2 border-black rounded-lg bg-white p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-          role="group"
-          aria-label="Lookbook view"
-        >
-          {(["list", "plan"] as const).map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode)}
-              className={`min-h-9 px-4 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
-                viewMode === mode
-                  ? "bg-[#2C302E] text-white"
-                  : "text-black/45 hover:bg-black/5"
-              }`}
-              aria-pressed={viewMode === mode}
-            >
-              {mode === "list" ? "List" : "Plan"}
-            </button>
-          ))}
+              {(["list", "plan"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setViewMode(mode)}
+                  className={`min-h-11 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                    viewMode === mode
+                      ? "bg-black text-white"
+                      : "text-black/50 hover:bg-black/5"
+                  }`}
+                  aria-pressed={viewMode === mode}
+                >
+                  {mode === "list" ? (
+                    <span className="flex items-center gap-1"><List className="w-3 h-3" /> List</span>
+                  ) : (
+                    <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3" /> Plan</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            {isFree && outfitCount > 0 && (
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className={`text-[10px] font-bold uppercase tracking-wide px-2 py-1 rounded-full border-2 transition-colors ${
+                  atLimit
+                    ? "bg-black text-white border-black"
+                    : outfitCount >= FREE_OUTFIT_LIMIT - 1
+                    ? "bg-primary border-black text-black"
+                    : "bg-white border-black/20 text-black/40 hover:border-black/40"
+                }`}
+              >
+                {outfitCount}/{FREE_OUTFIT_LIMIT} saved
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search bar */}

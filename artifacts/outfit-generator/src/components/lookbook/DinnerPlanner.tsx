@@ -1,21 +1,25 @@
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  format,
   addDays,
-  subDays,
+  format,
+  getDay,
   isToday,
+  parseISO,
   startOfToday,
+  startOfWeek,
+  subDays,
 } from "date-fns";
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Plus,
-  Pencil,
   Trash2,
-  Utensils,
+  X,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { ClothingItem, DinnerPlan, DinnerPlanInput } from "@/types/local";
+import { getImageUrl } from "@/lib/utils";
 
 export interface DinnerPlannerProps {
   plans?: DinnerPlan[];
@@ -29,111 +33,265 @@ export interface DinnerPlannerProps {
 
 const toDateString = (date: Date) => format(date, "yyyy-MM-dd");
 
-function PlanForm({
+function DinnerPickerSheet({
   date,
+  plan,
   recipes,
-  initialRecipeName = "",
-  initialRecipeItemId = null,
-  initialNotes = "",
-  isSaving = false,
-  onSave,
-  onCancel,
+  customEditor,
+  isSaving,
+  onClose,
+  onPickRecipe,
+  onSaveCustom,
+  onOpenCustom,
+  onDelete,
 }: {
   date: string;
+  plan?: DinnerPlan;
   recipes: ClothingItem[];
-  initialRecipeName?: string;
-  initialRecipeItemId?: string | null;
-  initialNotes?: string;
-  isSaving?: boolean;
-  onSave: (data: DinnerPlanInput) => void;
-  onCancel: () => void;
+  customEditor: boolean;
+  isSaving: boolean;
+  onClose: () => void;
+  onPickRecipe: (recipe: ClothingItem) => void;
+  onSaveCustom: (name: string, notes: string) => void;
+  onOpenCustom: () => void;
+  onDelete: () => void;
 }) {
-  const [recipeName, setRecipeName] = useState(initialRecipeName);
-  const [recipeItemId, setRecipeItemId] = useState(initialRecipeItemId ?? "");
-  const [notes, setNotes] = useState(initialNotes);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [name, setName] = useState(plan && !plan.recipeItemId ? plan.recipeName : "");
+  const [notes, setNotes] = useState(plan?.notes ?? "");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const sheetRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    // Slight delay to ensure animation completes before focusing to prevent layout jump
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 50);
-    return () => clearTimeout(timer);
-  }, []);
+    const getFocusable = () => Array.from(
+      sheetRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled])',
+      ) ?? [],
+    );
+    const focusable = getFocusable();
+    (customEditor ? nameRef.current : focusable[0])?.focus();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!recipeName.trim()) return;
-    onSave({
-      date,
-      recipeName: recipeName.trim(),
-      recipeItemId: recipeItemId || null,
-      notes: notes.trim() || null,
-    });
-  };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const elements = getFocusable();
+      if (elements.length === 0) return;
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [customEditor, onClose]);
+
+  const titleDate = format(parseISO(date), "EEEE, MMMM d");
 
   return (
-    <motion.form
-      key="form"
-      initial={{ opacity: 0, y: -5 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.15 }}
-      onSubmit={handleSubmit}
-      className="flex-1 bg-[#FFF9E6] border-2 border-black rounded-xl p-3 md:p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-3 relative z-10"
+    <motion.div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/35"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
     >
-      <select
-        value={recipeItemId}
-        onChange={(e) => {
-          const selectedId = e.target.value;
-          setRecipeItemId(selectedId);
-          if (selectedId) {
-            setRecipeName(recipes.find((recipe) => recipe.id === selectedId)?.name ?? "");
-          } else {
-            setRecipeName("");
-          }
-        }}
-        className="w-full font-bold text-sm bg-white border-2 border-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-black"
+      <motion.section
+        ref={sheetRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dinner-picker-title"
+        className="w-full max-w-md rounded-t-[24px] border-2 border-black bg-white shadow-[0_-5px_0px_0px_rgba(0,0,0,1)]"
+        initial={{ y: "100%" }}
+        animate={{ y: 0 }}
+        exit={{ y: "100%" }}
+        transition={{ type: "spring", damping: 28, stiffness: 260 }}
+        onClick={(event) => event.stopPropagation()}
+        style={{ paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}
       >
-        <option value="">Custom dinner</option>
-        {recipes.map((recipe) => (
-          <option key={recipe.id} value={recipe.id}>{recipe.name || "Untitled recipe"}</option>
-        ))}
-      </select>
-      <input
-        ref={inputRef}
-        value={recipeName}
-        onChange={(e) => setRecipeName(e.target.value)}
-        placeholder="Dinner name..."
-        maxLength={100}
-        disabled={Boolean(recipeItemId)}
-        className="w-full font-display font-bold text-lg md:text-xl uppercase bg-white border-2 border-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-black placeholder:text-black/25 transition-shadow disabled:bg-black/5 disabled:text-black/60"
-      />
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Notes or recipe details (optional)..."
-        rows={2}
-        maxLength={300}
-        className="w-full text-sm font-medium bg-white border-2 border-black rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-black resize-none placeholder:text-black/25 transition-shadow"
-      />
-      <div className="flex justify-end gap-2 mt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="min-h-11 px-4 py-2 border-2 border-black rounded-lg bg-white font-bold text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={!recipeName.trim() || isSaving}
-          className="min-h-11 px-6 py-2 border-2 border-black rounded-lg bg-[#4A5D23] text-white font-bold text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-y-0.5 active:translate-x-0.5 active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSaving ? "Saving…" : "Save Dinner"}
-        </button>
-      </div>
-    </motion.form>
+        <div className="flex items-start justify-between gap-4 border-b-2 border-black px-5 pb-4 pt-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">
+              Plan dinner for
+            </p>
+            <h2 id="dinner-picker-title" className="mt-1 font-display text-2xl font-bold leading-none">
+              {titleDate}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close dinner picker"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-black bg-[#F2F2F2] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {customEditor ? (
+          <form
+            className="flex flex-col gap-3 p-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              if (name.trim()) onSaveCustom(name, notes);
+            }}
+          >
+            <p className="text-xs font-bold uppercase tracking-widest text-black/50">
+              Custom dinner
+            </p>
+            <input
+              ref={nameRef}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Dinner name"
+              maxLength={100}
+              className="min-h-11 w-full rounded-lg border-2 border-black bg-[#FFF9E6] px-3 font-display text-lg font-bold uppercase outline-none focus:ring-2 focus:ring-black"
+            />
+            <textarea
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder="Notes or recipe details (optional)"
+              rows={3}
+              maxLength={300}
+              className="w-full resize-none rounded-lg border-2 border-black bg-white px-3 py-2 text-sm font-medium outline-none focus:ring-2 focus:ring-black"
+            />
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="min-h-11 flex-1 rounded-lg border-2 border-black bg-white px-3 text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={!name.trim() || isSaving}
+                className="min-h-11 flex-1 rounded-lg border-2 border-black bg-[#4A5D23] px-3 text-xs font-bold uppercase tracking-wider text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSaving ? "Saving…" : "Save Dinner"}
+              </button>
+            </div>
+            {plan && (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="min-h-11 self-center px-3 text-xs font-bold uppercase tracking-wider text-red-700"
+              >
+                Delete this dinner
+              </button>
+            )}
+          </form>
+        ) : (
+          <>
+            <div className="max-h-[48vh] overflow-y-auto px-5 py-3">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-black/45">
+                Your recipe + meal plan photos
+              </p>
+              {recipes.length > 0 ? (
+                <div className="divide-y-2 divide-black/10">
+                  {recipes.map((recipe) => {
+                    const selected = plan?.recipeItemId === recipe.id;
+                    return (
+                      <button
+                        type="button"
+                        key={recipe.id}
+                        disabled={isSaving}
+                        onClick={() => onPickRecipe(recipe)}
+                        className="flex min-h-[76px] w-full items-center gap-3 py-2 text-left transition-colors active:bg-[#FFF9E6] disabled:opacity-60"
+                      >
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border-2 border-black bg-[#FDECEF]">
+                          {recipe.imageObjectPath ? (
+                            <img
+                              src={getImageUrl(recipe.imageObjectPath) ?? undefined}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center text-[9px] font-bold uppercase text-black/30">
+                              No photo
+                            </div>
+                          )}
+                        </div>
+                        <span className="min-w-0 flex-1 truncate font-display text-lg font-bold uppercase">
+                          {recipe.name || "Untitled recipe"}
+                        </span>
+                        {selected && (
+                          <span className="rounded-full border-2 border-black bg-[#FFD966] px-2 py-1 text-[9px] font-bold uppercase">
+                            Planned
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-black/25 bg-black/5 px-4 py-6 text-center text-sm font-medium text-black/55">
+                  No recipe or meal plan uploads yet.
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t-2 border-black bg-[#FFF9E6] p-5">
+              <button
+                type="button"
+                onClick={onOpenCustom}
+                className="min-h-11 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-black bg-white px-3 text-xs font-bold uppercase tracking-wider shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              >
+                <Plus className="h-4 w-4" />
+                {plan?.recipeItemId
+                  ? "Use a custom dinner"
+                  : plan
+                  ? "Edit custom dinner"
+                  : "Add custom dinner"}
+              </button>
+              {plan && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="min-h-11 flex w-full items-center justify-center gap-2 rounded-lg px-3 text-xs font-bold uppercase tracking-wider text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete planned dinner
+                </button>
+              )}
+            </div>
+          </>
+        )}
+
+        {confirmDelete && (
+          <div className="mx-5 mb-4 flex items-center justify-between gap-3 rounded-lg border-2 border-red-500 bg-red-50 p-3">
+            <span className="text-xs font-bold text-red-700">Remove this dinner?</span>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="min-h-11 rounded-md border-2 border-black bg-white px-3 text-[10px] font-bold uppercase"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onDelete}
+                disabled={isSaving}
+                className="min-h-11 rounded-md border-2 border-red-700 bg-red-600 px-3 text-[10px] font-bold uppercase text-white disabled:opacity-50"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </motion.section>
+    </motion.div>
   );
 }
 
@@ -147,261 +305,215 @@ export default function DinnerPlanner({
   onDeletePlan,
 }: DinnerPlannerProps) {
   const today = useMemo(() => startOfToday(), []);
-  const [windowStart, setWindowStart] = useState(() => subDays(today, 2));
+  const [windowStart, setWindowStart] = useState(() => startOfWeek(today, { weekStartsOn: 0 }));
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [customEditor, setCustomEditor] = useState(false);
+  const dateOpenerRef = useRef<HTMLButtonElement | null>(null);
 
-  const [editingDate, setEditingDate] = useState<string | null>(null);
-  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-
-  const todayRef = useRef<HTMLDivElement>(null);
-
-  const days = useMemo(() => {
-    return Array.from({ length: 30 }).map((_, i) => addDays(windowStart, i));
-  }, [windowStart]);
+  const days = useMemo(
+    () => Array.from({ length: 30 }, (_, index) => addDays(windowStart, index)),
+    [windowStart],
+  );
+  const gridCells = useMemo(() => {
+    const leadingBlanks = Array.from({ length: getDay(windowStart) }, () => null);
+    const trailingCount = (7 - ((leadingBlanks.length + days.length) % 7)) % 7;
+    return [
+      ...leadingBlanks,
+      ...days,
+      ...Array.from({ length: trailingCount }, () => null),
+    ];
+  }, [days, windowStart]);
 
   const plansByDate = useMemo(() => {
-    const map = new Map<string, DinnerPlan>();
-    plans.forEach((p) => map.set(p.date, p));
-    return map;
+    const result = new Map<string, DinnerPlan>();
+    plans.forEach((plan) => result.set(plan.date, plan));
+    return result;
   }, [plans]);
 
-  const handlePrevWindow = () => setWindowStart((prev) => subDays(prev, 30));
-  const handleNextWindow = () => setWindowStart((prev) => addDays(prev, 30));
-  const handleGoToToday = () => {
-    setWindowStart(subDays(today, 2));
-    setTimeout(() => {
-      todayRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
+  const selectedPlan = selectedDate ? plansByDate.get(selectedDate) : undefined;
+
+  const closePicker = () => {
+    setSelectedDate(null);
+    setCustomEditor(false);
+    window.setTimeout(() => dateOpenerRef.current?.focus(), 0);
   };
 
-  const handleSaveAdd = (data: DinnerPlanInput) => {
-    onSavePlan?.(data);
-    setEditingDate(null);
+  const openDate = (date: Date, opener: HTMLButtonElement) => {
+    const dateString = toDateString(date);
+    const existing = plansByDate.get(dateString);
+    dateOpenerRef.current = opener;
+    setSelectedDate(dateString);
+    setCustomEditor(Boolean(existing && !existing.recipeItemId));
   };
 
-  const handleSaveEdit = (data: DinnerPlanInput) => {
-    onSavePlan?.(data);
-    setEditingPlanId(null);
+  const handlePickRecipe = (recipe: ClothingItem) => {
+    if (!selectedDate) return;
+    onSavePlan?.({
+      date: selectedDate,
+      recipeItemId: recipe.id,
+      recipeName: recipe.name.trim() || "Untitled recipe",
+      notes: selectedPlan?.notes ?? null,
+    });
+    closePicker();
+  };
+
+  const handleSaveCustom = (name: string, notes: string) => {
+    if (!selectedDate) return;
+    onSavePlan?.({
+      date: selectedDate,
+      recipeItemId: null,
+      recipeName: name.trim(),
+      notes: notes.trim() || null,
+    });
+    closePicker();
+  };
+
+  const handleDelete = () => {
+    if (!selectedPlan) return;
+    onDeletePlan?.(selectedPlan.id);
+    closePicker();
   };
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-5 animate-pulse w-full max-w-2xl mx-auto">
-        <div className="h-16 bg-black/10 rounded-xl border-2 border-black/20" />
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex gap-4">
-            <div className="w-12 md:w-16 h-16 bg-black/10 rounded-lg border-2 border-black/20 shrink-0" />
-            <div className="flex-1 h-24 bg-black/10 rounded-xl border-2 border-black/20" />
-          </div>
-        ))}
+      <div className="mx-auto flex w-full max-w-md animate-pulse flex-col gap-4">
+        <div className="h-[430px] rounded-[18px] border-2 border-black/20 bg-black/10" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto flex flex-col">
-      {/* Header / Window Navigation */}
-      <div className="sticky top-0 z-20 pb-4 mb-4 pt-2 bg-background/80 backdrop-blur-xl -mx-4 px-4 md:mx-0 md:px-0">
-        <div className="flex items-center justify-between bg-[#2C302E] text-white border-2 border-black rounded-xl p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-          <button
-            onClick={handlePrevWindow}
-            className="w-11 h-11 flex items-center justify-center border-2 border-white/20 rounded-lg hover:bg-white hover:text-black transition-colors active:translate-y-0.5 active:translate-x-0.5"
-            aria-label="Previous 30 days"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
+    <>
+      <div className="mx-auto w-full max-w-md">
+        <section className="rounded-[18px] border-2 border-black bg-white p-4 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)]">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display text-2xl font-bold uppercase tracking-tight">30-Day Planner</h2>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">
+                Tap a day to plan your dinner
+              </p>
+            </div>
+            <CalendarDays className="mt-1 h-7 w-7 shrink-0" strokeWidth={1.7} />
+          </div>
 
-          <div className="flex flex-col items-center justify-center min-w-0 px-2">
-            <div className="flex items-center gap-2">
-              <Utensils className="w-4 h-4 text-[#FFD966] shrink-0" />
-              <span className="font-display font-bold text-base md:text-lg uppercase tracking-tight truncate">
-                {format(days[0], "MMM d")} - {format(days[days.length - 1], "MMM d")}
-              </span>
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setWindowStart((current) => subDays(current, 30))}
+              aria-label="Previous 30 days"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-black bg-white active:translate-x-0.5 active:translate-y-0.5"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <div className="text-center">
+              <p className="font-display text-sm font-bold uppercase">
+                {format(days[0], "MMM d")} – {format(days[days.length - 1], "MMM d")}
+              </p>
+              <button
+                type="button"
+                onClick={() => setWindowStart(startOfWeek(today, { weekStartsOn: 0 }))}
+                className="min-h-11 px-3 text-[10px] font-bold uppercase tracking-widest text-[#4A5D23]"
+              >
+                Return to Today
+              </button>
             </div>
             <button
-              onClick={handleGoToToday}
-              className="min-h-11 px-3 text-[10px] md:text-xs font-bold uppercase tracking-widest text-white/60 hover:text-[#FFD966] transition-colors mt-0.5 active:scale-95"
+              type="button"
+              onClick={() => setWindowStart((current) => addDays(current, 30))}
+              aria-label="Next 30 days"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border-2 border-black bg-white active:translate-x-0.5 active:translate-y-0.5"
             >
-              Return to Today
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
 
-          <button
-            onClick={handleNextWindow}
-            className="w-11 h-11 flex items-center justify-center border-2 border-white/20 rounded-lg hover:bg-white hover:text-black transition-colors active:translate-y-0.5 active:translate-x-0.5"
-            aria-label="Next 30 days"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+          <div className="mt-1 grid grid-cols-7 gap-1.5">
+            {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+              <span
+                key={`${day}-${index}`}
+                className="pb-1 text-center text-[10px] font-bold uppercase tracking-widest text-black/45"
+              >
+                {day}
+              </span>
+            ))}
+            {gridCells.map((date, index) => {
+              if (!date) return <span key={`blank-${index}`} aria-hidden="true" />;
+
+              const dateString = toDateString(date);
+              const plan = plansByDate.get(dateString);
+              const current = isToday(date);
+              const past = date < today && !current;
+
+              return (
+                <motion.button
+                  type="button"
+                  key={dateString}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={(event) => openDate(date, event.currentTarget)}
+                  aria-label={`${format(date, "EEEE, MMMM d")}${plan ? `, ${plan.recipeName}` : ", Add Dinner"}`}
+                  className={`relative flex aspect-[0.82] min-h-[54px] flex-col items-start justify-between rounded-[10px] border-2 p-1.5 text-left transition-colors after:absolute after:-inset-1 after:content-[''] ${
+                    current
+                      ? "border-black bg-[#FFD966]"
+                      : past
+                      ? "border-black/15 bg-[#F2F2F2] text-black/40"
+                      : plan
+                      ? "border-black bg-[#FDECEF]"
+                      : "border-black/20 bg-white hover:bg-[#FFF9E6]"
+                  }`}
+                >
+                  <span className="text-[11px] font-bold leading-none">{format(date, "d")}</span>
+                  {plan ? (
+                    <span className="line-clamp-2 w-full pr-0.5 text-[9px] font-bold uppercase leading-[1.05]">
+                      {plan.recipeName}
+                    </span>
+                  ) : (
+                    <Plus className="absolute bottom-1 right-1 h-3 w-3 text-black/30" />
+                  )}
+                  {current && (
+                    <span className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-[8px] font-bold uppercase tracking-widest text-[#4A5D23]">
+                      Today
+                    </span>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          <div className="mt-7 flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-wider text-black/45">
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 border-2 border-black bg-[#FFD966]" />
+              Today
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 border-2 border-black bg-[#FDECEF]" />
+              Planned
+            </span>
+          </div>
+        </section>
       </div>
 
       {error && (
-        <p className="mb-4 rounded-xl border-2 border-red-500 bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
+        <p className="mx-auto mt-4 w-full max-w-md rounded-xl border-2 border-red-500 bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
           {error}
         </p>
       )}
 
-      {/* Calendar List */}
-      <div className="relative flex flex-col gap-4 md:gap-6 pb-12">
-        {/* Timeline dotted line */}
-        <div className="absolute top-4 bottom-4 left-[23px] md:left-[31px] w-0 border-l-2 border-dashed border-black/20 z-0" />
-
-        {days.map((date) => {
-          const dateStr = toDateString(date);
-          const plan = plansByDate.get(dateStr);
-          const isEditingThisNew = editingDate === dateStr;
-          const isEditingThisExisting = plan && editingPlanId === plan.id;
-          const isTodayDate = isToday(date);
-          const isPast = date < today && !isTodayDate;
-
-          return (
-            <div
-              key={dateStr}
-              ref={isTodayDate ? todayRef : null}
-              className="flex gap-3 md:gap-5 group relative z-10"
-            >
-              {/* Date Column */}
-              <div className="w-12 md:w-16 flex flex-col items-center shrink-0">
-                <div
-                  className={`w-full aspect-[3/4] flex flex-col items-center justify-center border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-colors ${
-                    isTodayDate
-                      ? "bg-[#FFD966] text-black"
-                      : isPast
-                      ? "bg-[#F2F2F2] text-black/40 border-black/20 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]"
-                      : "bg-white text-black"
-                  }`}
-                >
-                  <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest leading-none mt-1">
-                    {format(date, "EEE")}
-                  </span>
-                  <span className="text-xl md:text-2xl font-display font-bold leading-none mt-1">
-                    {format(date, "d")}
-                  </span>
-                </div>
-                {isTodayDate && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#4A5D23] mt-2 bg-background px-1 rounded-sm">
-                    Today
-                  </span>
-                )}
-              </div>
-
-              {/* Content Column */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <AnimatePresence mode="wait">
-                  {isEditingThisNew ? (
-                    <PlanForm
-                      key="form-new"
-                      date={dateStr}
-                      recipes={recipes}
-                      isSaving={isSaving}
-                      onSave={handleSaveAdd}
-                      onCancel={() => setEditingDate(null)}
-                    />
-                  ) : isEditingThisExisting ? (
-                    <PlanForm
-                      key="form-edit"
-                      date={dateStr}
-                      recipes={recipes}
-                      initialRecipeName={plan.recipeName}
-                      initialRecipeItemId={plan.recipeItemId}
-                      initialNotes={plan.notes || ""}
-                      isSaving={isSaving}
-                      onSave={handleSaveEdit}
-                      onCancel={() => setEditingPlanId(null)}
-                    />
-                  ) : plan ? (
-                    <motion.div
-                      key="card"
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className={`bg-white border-2 border-black rounded-xl p-3 md:p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-2 relative group/card ${
-                        isPast ? "opacity-75 grayscale-[20%]" : ""
-                      }`}
-                    >
-                      <div className="flex justify-between items-start gap-2">
-                        <h4 className="font-display font-bold text-lg md:text-xl uppercase leading-tight break-words mt-1">
-                          {plan.recipeName}
-                        </h4>
-
-                        {/* Actions */}
-                        <div className="flex gap-1 shrink-0 opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => setEditingPlanId(plan.id)}
-                            className="w-11 h-11 flex items-center justify-center border-2 border-black rounded-full bg-white hover:bg-[#FFD966] transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
-                            aria-label="Edit plan"
-                          >
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmId(plan.id)}
-                            className="w-11 h-11 flex items-center justify-center border-2 border-black rounded-full bg-white hover:bg-destructive hover:text-white transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-0.5 active:translate-y-0.5"
-                            aria-label="Delete plan"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                      {plan.notes && (
-                        <p className="text-sm font-medium text-black/70 bg-black/5 p-2.5 rounded-lg border border-black/10 whitespace-pre-wrap leading-snug">
-                          {plan.notes}
-                        </p>
-                      )}
-                      {deleteConfirmId === plan.id && (
-                        <div className="mt-1 flex items-center justify-between gap-2 rounded-lg border-2 border-red-500 bg-red-50 p-2">
-                          <span className="text-xs font-bold text-red-700">Remove this dinner?</span>
-                          <div className="flex gap-1.5">
-                            <button
-                              onClick={() => setDeleteConfirmId(null)}
-                              className="min-h-11 px-2.5 py-1.5 border-2 border-black rounded-md bg-white text-[10px] font-bold uppercase"
-                            >
-                              Cancel
-                            </button>
-                            <button
-                              onClick={() => {
-                                onDeletePlan?.(plan.id);
-                                setDeleteConfirmId(null);
-                              }}
-                              className="min-h-11 px-2.5 py-1.5 border-2 border-red-700 rounded-md bg-red-600 text-white text-[10px] font-bold uppercase"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  ) : (
-                    <motion.button
-                      key="empty"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15 }}
-                      onClick={() => setEditingDate(dateStr)}
-                      className={`w-full h-full min-h-[4.5rem] border-2 border-dashed rounded-xl flex items-center justify-center transition-all group/btn ${
-                        isPast
-                          ? "border-black/15 bg-transparent text-black/30 hover:bg-black/5 hover:border-black/30"
-                          : "border-black/25 bg-black/5 text-black/40 hover:bg-black/10 hover:border-black/50 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]"
-                      }`}
-                    >
-                      <Plus
-                        className={`w-5 h-5 mr-1 transition-transform group-hover/btn:scale-110 ${
-                          isPast ? "opacity-50" : ""
-                        }`}
-                      />
-                      <span className="text-xs font-bold uppercase tracking-widest">
-                        Add Dinner
-                      </span>
-                    </motion.button>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
+      <AnimatePresence>
+        {selectedDate && (
+          <DinnerPickerSheet
+            date={selectedDate}
+            plan={selectedPlan}
+            recipes={recipes}
+            customEditor={customEditor}
+            isSaving={isSaving}
+            onClose={closePicker}
+            onPickRecipe={handlePickRecipe}
+            onSaveCustom={handleSaveCustom}
+            onOpenCustom={() => setCustomEditor(true)}
+            onDelete={handleDelete}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
