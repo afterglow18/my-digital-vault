@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { Route, Switch, Redirect, Router as WouterRouter } from 'wouter';
+import { Route, Switch, Redirect, Router as WouterRouter, useLocation } from 'wouter';
 import { AppLayout } from './components/layout/AppLayout';
 import WardrobePage from './pages/wardrobe';
 import SavedPage from './pages/saved';
@@ -39,6 +39,43 @@ function NotFound() {
       <h1 className="text-6xl font-display font-bold text-primary drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">404</h1>
       <p className="text-xl font-bold uppercase">As if! This page is totally lost.</p>
     </div>
+  );
+}
+
+function SplashLayer({
+  splashPhase,
+  onHeroDone,
+  onEnter,
+  onDismiss,
+}: {
+  splashPhase: SplashPhase;
+  onHeroDone: () => void;
+  onEnter: () => void;
+  onDismiss: () => void;
+}) {
+  const [, navigate] = useLocation();
+  const handleFavorites = useCallback(() => {
+    onDismiss();
+    navigate("/favorites");
+  }, [navigate, onDismiss]);
+
+  return (
+    <>
+      {/* Solid backdrop — sits above the app but below both splash screens.
+          Prevents the app from ever showing through during transitions. */}
+      {splashPhase !== "entered" && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 190, background: "#1a1a1a" }} />
+      )}
+
+      <AnimatePresence>
+        {splashPhase === "hero" && (
+          <HeroSplash key="hero" onContinue={onHeroDone} onFavorites={handleFavorites} />
+        )}
+        {splashPhase === "welcome" && (
+          <WelcomePage key="welcome" onEnter={onEnter} />
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -112,22 +149,12 @@ function AppShell() {
     <BiometricLockContext.Provider value={{ enabled, enableLock, disableLock }}>
       <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <Router />
-
-        {/* Splash sequence — hero image → animated cabinet → app */}
-        {/* Solid backdrop — sits above the app but below both splash screens.
-            Prevents the app from ever showing through during transitions. */}
-        {splashPhase !== "entered" && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 190, background: "#1a1a1a" }} />
-        )}
-
-        <AnimatePresence>
-          {splashPhase === "hero" && (
-            <HeroSplash key="hero" onContinue={handleHeroDone} />
-          )}
-          {splashPhase === "welcome" && (
-            <WelcomePage key="welcome" onEnter={handleEnter} />
-          )}
-        </AnimatePresence>
+        <SplashLayer
+          splashPhase={splashPhase}
+          onHeroDone={handleHeroDone}
+          onEnter={handleEnter}
+          onDismiss={() => setSplashPhase("entered")}
+        />
       </WouterRouter>
 
       {/* Biometric lock gate — sits above everything including the welcome splash */}

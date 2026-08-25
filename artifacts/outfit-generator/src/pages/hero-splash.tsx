@@ -10,9 +10,10 @@ import { motion } from "framer-motion";
 
 interface Props {
   onContinue: () => void;
+  onFavorites: () => void;
 }
 
-export default function HeroSplash({ onContinue }: Props) {
+export default function HeroSplash({ onContinue, onFavorites }: Props) {
   useEffect(() => {
     const t = setTimeout(onContinue, 2500);
     return () => clearTimeout(t);
@@ -108,6 +109,28 @@ export default function HeroSplash({ onContinue }: Props) {
           My Digital<br />Filing Cabinet
         </div>
       </motion.div>
+
+      {/* The safe/file icon is part of the hero artwork and is also the
+          app's favorites shortcut. Keep that visible affordance tappable
+          while the splash is up instead of making users tap through it. */}
+      <button
+        type="button"
+        onClick={onFavorites}
+        aria-label="View favorites"
+        data-testid="hero-favorites-button"
+        style={{
+          position: "absolute",
+          left: "7%",
+          bottom: 0,
+          width: "26%",
+          height: "16%",
+          zIndex: 4,
+          padding: 0,
+          border: "none",
+          background: "transparent",
+          cursor: "pointer",
+        }}
+      />
     </motion.div>
   );
 }
