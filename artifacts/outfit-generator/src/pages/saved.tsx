@@ -186,7 +186,7 @@ export default function SavedPage() {
   };
 
   return (
-    <div className={`min-h-full flex flex-col pt-8 px-4 pb-8 relative ${viewMode === "plan" ? "bg-[#FFF4F6]" : "bg-secondary/10"}`}>
+    <div className={`min-h-full flex flex-col pt-8 px-4 pb-8 relative ${viewMode === "plan" ? "bg-[#F3F3F1]" : "bg-secondary/10"}`}>
       <header className="mb-4">
         <h1 className="text-4xl font-display font-bold uppercase tracking-tighter mb-1">Lookbook</h1>
         <div className="flex items-center justify-between gap-2 mb-3">

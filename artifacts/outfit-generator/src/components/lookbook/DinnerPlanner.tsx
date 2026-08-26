@@ -111,7 +111,7 @@ function DinnerPickerSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="dinner-picker-title"
-        className="w-full max-w-md rounded-t-[24px] border-2 border-black bg-white shadow-[0_-5px_0px_0px_rgba(0,0,0,1)]"
+        className="w-full max-w-md rounded-t-[24px] border-2 border-black bg-[#F3F3F1] shadow-[0_-5px_0px_0px_rgba(0,0,0,1)]"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
@@ -155,7 +155,7 @@ function DinnerPickerSheet({
               onChange={(event) => setName(event.target.value)}
               placeholder="Dinner name"
               maxLength={100}
-              className="min-h-11 w-full rounded-lg border-2 border-black bg-[#FFF9E6] px-3 font-display text-lg font-bold uppercase outline-none focus:ring-2 focus:ring-black"
+              className="min-h-11 w-full rounded-lg border-2 border-black bg-[#EEEDE8] px-3 font-display text-lg font-bold uppercase outline-none focus:ring-2 focus:ring-black"
             />
             <textarea
               value={notes}
@@ -207,9 +207,9 @@ function DinnerPickerSheet({
                         key={recipe.id}
                         disabled={isSaving}
                         onClick={() => onPickRecipe(recipe)}
-                        className="flex min-h-[76px] w-full items-center gap-3 py-2 text-left transition-colors active:bg-[#FFF9E6] disabled:opacity-60"
+                        className="flex min-h-[76px] w-full items-center gap-3 py-2 text-left transition-colors active:bg-[#E9E9E6] disabled:opacity-60"
                       >
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border-2 border-black bg-[#FDECEF]">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border-2 border-black bg-[#E9E9E6]">
                           {recipe.imageObjectPath ? (
                             <img
                               src={getImageUrl(recipe.imageObjectPath) ?? undefined}
@@ -226,7 +226,7 @@ function DinnerPickerSheet({
                           {recipe.name || "Untitled recipe"}
                         </span>
                         {selected && (
-                          <span className="rounded-full border-2 border-black bg-[#FFD966] px-2 py-1 text-[9px] font-bold uppercase">
+                          <span className="rounded-full border-2 border-black bg-[#E2E1DC] px-2 py-1 text-[9px] font-bold uppercase">
                             Planned
                           </span>
                         )}
@@ -241,7 +241,7 @@ function DinnerPickerSheet({
               )}
             </div>
 
-            <div className="flex flex-col gap-2 border-t-2 border-black bg-[#FFF9E6] p-5">
+            <div className="flex flex-col gap-2 border-t-2 border-black bg-[#EEEDE8] p-5">
               <button
                 type="button"
                 onClick={onOpenCustom}
@@ -456,12 +456,12 @@ export default function DinnerPlanner({
                   aria-label={`${format(date, "EEEE, MMMM d")}${plan ? `, ${plan.recipeName}` : ", Add Dinner"}`}
                   className={`relative flex aspect-[0.82] min-h-[54px] flex-col items-start justify-between rounded-[10px] border-2 p-1.5 text-left transition-colors after:absolute after:-inset-1 after:content-[''] ${
                     current
-                      ? "border-black bg-[#FFD966]"
+                      ? "border-black bg-[#E2E1DC]"
                       : past
                       ? "border-black/15 bg-[#F2F2F2] text-black/40"
                       : plan
-                      ? "border-black bg-[#FDECEF]"
-                      : "border-black/20 bg-white hover:bg-[#FFF9E6]"
+                      ? "border-black bg-[#E9E9E6]"
+                      : "border-black/20 bg-white hover:bg-[#F2F2F0]"
                   }`}
                 >
                   {recipePhoto && (
@@ -497,11 +497,11 @@ export default function DinnerPlanner({
 
           <div className="mt-7 flex items-center justify-center gap-4 text-[10px] font-bold uppercase tracking-wider text-black/45">
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 border-2 border-black bg-[#FFD966]" />
+              <span className="h-3 w-3 border-2 border-black bg-[#E2E1DC]" />
               Today
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-3 w-3 border-2 border-black bg-[#FDECEF]" />
+              <span className="h-3 w-3 border-2 border-black bg-[#E9E9E6]" />
               Planned
             </span>
           </div>
