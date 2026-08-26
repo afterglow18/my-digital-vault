@@ -441,11 +441,14 @@ export default function DinnerPlanner({
 
               const dateString = toDateString(date);
               const plan = plansByDate.get(dateString);
-              const recipePhoto = plan?.recipeItemId
-                ? recipes.find((recipe) => recipe.id === plan.recipeItemId)?.imageObjectPath
-                : null;
               const current = isToday(date);
               const past = date < today && !current;
+              const planName = plan?.recipeName.trim() || "Dinner";
+              const planNameSize = planName.length > 24
+                ? "text-[6px]"
+                : planName.length > 14
+                ? "text-[7px]"
+                : "text-[8px]";
 
               return (
                 <motion.button
@@ -464,23 +467,14 @@ export default function DinnerPlanner({
                       : "border-black/20 bg-white hover:bg-[#F2F2F0]"
                   }`}
                 >
-                  {recipePhoto && (
-                    <img
-                      src={getImageUrl(recipePhoto) ?? undefined}
-                      alt=""
-                      className="absolute inset-0 h-full w-full rounded-[8px] object-cover opacity-70"
-                    />
-                  )}
-                  <span className={`relative z-10 rounded-sm px-0.5 text-[11px] font-bold leading-none ${
-                    recipePhoto ? "bg-white/80" : ""
-                  }`}>
+                  <span className="relative z-10 px-0.5 text-[11px] font-bold leading-none">
                     {format(date, "d")}
                   </span>
                   {plan ? (
-                    <span className={`relative z-10 line-clamp-2 w-full pr-0.5 text-[9px] font-bold uppercase leading-[1.05] ${
-                      recipePhoto ? "rounded-sm bg-white/80 px-0.5" : ""
-                    }`}>
-                      {plan.recipeName}
+                    <span
+                      className={`relative z-10 line-clamp-4 w-full break-words pr-0.5 font-bold uppercase leading-[1.05] ${planNameSize}`}
+                    >
+                      {planName}
                     </span>
                   ) : (
                     <Plus className="absolute bottom-1 right-1 h-3 w-3 text-black/30" />
